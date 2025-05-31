@@ -34,7 +34,7 @@ export const fetchSchedules = async (
     // format (YYYY-MM-DD)
     const adjustedDate = originalDate.toISOString().split("T")[0];
   
-    const response = await axios.get("http://localhost:8080/schedules/filter", {
+    const response = await axios.get("http://localhost:8765/bus-service/schedules/filter", {
       params: {
         sourceCity: origin,
         destinationCity: destination,

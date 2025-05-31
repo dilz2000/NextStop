@@ -1,8 +1,10 @@
-import React from "react";
+
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "../ui/button";
-import { MapPin } from "lucide-react";
+import { MapPin, Loader2 } from "lucide-react";
 import { ScheduleResponse } from "@/api/scheduleApi";
+import { fetchSeatAvailability, SeatAvailability } from "@/api/seatAvailabilityApi";
 
 interface SeatSelectionStepProps {
   selectedSchedule: ScheduleResponse | null;
@@ -19,6 +21,31 @@ export const SeatSelectionStep: React.FC<SeatSelectionStepProps> = ({
   onContinueToPayment,
   onBackToResults,
 }) => {
+  const [seatAvailability, setSeatAvailability] = useState<SeatAvailability[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadSeatAvailability = async () => {
+      if (!selectedSchedule) return;
+
+      setLoading(true);
+      setError(null);
+      
+      try {
+        const availability = await fetchSeatAvailability(selectedSchedule.id);
+        setSeatAvailability(availability);
+      } catch (error) {
+        console.error('Failed to fetch seat availability:', error);
+        setError('Failed to load seat availability. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadSeatAvailability();
+  }, [selectedSchedule]);
+
   const formatTime = (dateTimeString: string) => {
     const date = new Date(dateTimeString);
     return date.toLocaleTimeString('en-US', { 
@@ -37,8 +64,9 @@ export const SeatSelectionStep: React.FC<SeatSelectionStepProps> = ({
     return `${route.sourceCity} → ${route.destinationCity}`;
   };
 
-  const isSeatAvailable = (seatId: string) => {
-    return true;
+  const isSeatAvailable = (seatNumber: string): boolean => {
+    const seat = seatAvailability.find(s => s.seatNumber === seatNumber);
+    return seat ? seat.available : false;
   };
 
   const generateSeatLayout = (totalSeats: number) => {
@@ -46,6 +74,36 @@ export const SeatSelectionStep: React.FC<SeatSelectionStepProps> = ({
     const rows = Math.ceil(totalSeats / seatsPerRow);
     return { rows, seatsPerRow };
   };
+
+  const getAvailableSeatsCount = () => {
+    return seatAvailability.filter(seat => seat.available).length;
+  };
+
+  if (loading) {
+    return (
+      <div className="w-full max-w-4xl mx-auto">
+        <h2 className="text-2xl font-bold mb-6">Select Your Seats</h2>
+        <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-100 text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-gray-500">Loading seat availability...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full max-w-4xl mx-auto">
+        <h2 className="text-2xl font-bold mb-6">Select Your Seats</h2>
+        <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-100 text-center">
+          <p className="text-red-500 mb-4">{error}</p>
+          <Button onClick={() => window.location.reload()}>
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-4xl mx-auto">
@@ -69,6 +127,9 @@ export const SeatSelectionStep: React.FC<SeatSelectionStepProps> = ({
               <p className="text-sm text-gray-500">
                 {selectedSchedule.bus.operatorName} • Bus: {selectedSchedule.bus.busNumber}
               </p>
+              <p className="text-sm text-green-600 mt-1">
+                {getAvailableSeatsCount()} seats available
+              </p>
             </div>
             <div className="text-xl font-bold text-primary">
               LKR {selectedSchedule.fare.toFixed(2)}
@@ -87,16 +148,12 @@ export const SeatSelectionStep: React.FC<SeatSelectionStepProps> = ({
 
         {selectedSchedule && (
           <div className="mb-6">
-            {/* <div className="w-full bg-gray-200 h-10 rounded-t-xl mb-4 flex items-center justify-center text-gray-600 font-medium">
-              <MapPin className="h-4 w-4 mr-2" /> Front of the Bus
-            </div> */}
             <div className="w-full bg-gray-200 h-10 rounded-t-xl mb-4 flex items-center justify-center text-gray-600 font-medium">
-            <MapPin className="h-4 w-4 mr-2" /> Front of the Bus
+              <MapPin className="h-4 w-4 mr-2" /> Front of the Bus
             </div>
-
             <div className="w-full px-4 flex justify-between items-center text-sm text-gray-800 font-semibold mb-3">
-            <div className="flex items-center space-x-2">
-            <svg
+             <div className="flex items-center space-x-2">
+             <svg
                 className="w-8 h-8 text-black-700"
                 fill="none"
                 stroke="currentColor"
@@ -131,13 +188,8 @@ export const SeatSelectionStep: React.FC<SeatSelectionStepProps> = ({
             </div>
             </div>
                 <br />
+
             <div className="grid grid-cols-6 gap-3 mb-6">
-              {/* <div className="col-span-3 text-right text-xs text-gray-500 pr-1">
-                Window
-              </div>
-              <div className="col-span-3 text-left text-xs text-gray-500 pl-1">
-                Window
-              </div> */}
 
               {(() => {
                 const { rows } = generateSeatLayout(selectedSchedule.bus.totalSeats);
@@ -156,17 +208,18 @@ export const SeatSelectionStep: React.FC<SeatSelectionStepProps> = ({
                           key={seatId}
                           whileHover={isAvailable ? { scale: 1.05 } : {}}
                           whileTap={isAvailable ? { scale: 0.95 } : {}}
-                          className={`p-2 rounded-md text-center text-sm ${
+                          className={`p-2 rounded-md text-center text-sm font-medium transition-colors ${
                             isSelected 
-                              ? "bg-primary text-white" 
+                              ? "bg-primary text-white shadow-md" 
                               : isAvailable 
-                                ? "bg-white border border-gray-300 hover:border-primary" 
-                                : "bg-gray-200 cursor-not-allowed"
+                                ? "bg-white border border-gray-300 hover:border-primary hover:bg-blue-50" 
+                                : "bg-red-100 border border-red-200 text-red-400 cursor-not-allowed"
                           }`}
                           onClick={() =>
                             isAvailable && onSeatSelection(seatId)
                           }
                           disabled={!isAvailable}
+                          title={isAvailable ? `Seat ${seatId} - Available` : `Seat ${seatId} - Unavailable`}
                         >
                           {seatId}
                         </motion.button>
@@ -190,17 +243,18 @@ export const SeatSelectionStep: React.FC<SeatSelectionStepProps> = ({
                           key={seatId}
                           whileHover={isAvailable ? { scale: 1.05 } : {}}
                           whileTap={isAvailable ? { scale: 0.95 } : {}}
-                          className={`p-2 rounded-md text-center text-sm ${
+                          className={`p-2 rounded-md text-center text-sm font-medium transition-colors ${
                             isSelected 
-                              ? "bg-primary text-white" 
+                              ? "bg-primary text-white shadow-md" 
                               : isAvailable 
-                                ? "bg-white border border-gray-300 hover:border-primary" 
-                                : "bg-gray-200 cursor-not-allowed"
+                                ? "bg-white border border-gray-300 hover:border-primary hover:bg-blue-50" 
+                                : "bg-red-100 border border-red-200 text-red-400 cursor-not-allowed"
                           }`}
                           onClick={() =>
                             isAvailable && onSeatSelection(seatId)
                           }
                           disabled={!isAvailable}
+                          title={isAvailable ? `Seat ${seatId} - Available` : `Seat ${seatId} - Unavailable`}
                         >
                           {seatId}
                         </motion.button>
@@ -224,12 +278,12 @@ export const SeatSelectionStep: React.FC<SeatSelectionStepProps> = ({
               <span className="text-sm">Selected</span>
             </div>
             <div className="flex items-center">
-              <div className="w-4 h-4 bg-gray-200 mr-2"></div>
+              <div className="w-4 h-4 bg-red-100 border border-red-200 mr-2"></div>
               <span className="text-sm">Unavailable</span>
             </div>
           </div>
 
-          <div>
+          <div className="text-right">
             <p className="text-sm">
               Selected Seats: {selectedSeats.join(", ") || "None"}
             </p>
@@ -248,7 +302,7 @@ export const SeatSelectionStep: React.FC<SeatSelectionStepProps> = ({
           onClick={onContinueToPayment}
           disabled={selectedSeats.length === 0}
         >
-          Continue to Payment
+          Continue to Payment ({selectedSeats.length} seat{selectedSeats.length !== 1 ? 's' : ''})
         </Button>
       </div>
     </div>

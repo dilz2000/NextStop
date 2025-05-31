@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Button } from "../ui/button";
-import { Clock, MapPin, Ticket } from "lucide-react";
+import { Clock, MapPin, Ticket, Bus } from "lucide-react";
 import { ScheduleResponse } from "@/api/scheduleApi";
 
 interface ResultsStepProps {
@@ -76,12 +76,12 @@ export const ResultsStep: React.FC<ResultsStepProps> = ({
                       </span>
                     </div>
                     <div className="flex items-center">
-                      <MapPin className="h-4 w-4 mr-2" />
-                      <span>Bus: {schedule.bus.busNumber}</span>
-                    </div>
+                        <Bus className="h-4 w-4 mr-2" />
+                        <span>Bus: {schedule.bus.busNumber}</span>
+                        </div>
                     <div className="flex items-center">
                       <Ticket className="h-4 w-4 mr-2" />
-                      <span>Available Seats: {schedule.bus.totalSeats}</span>
+                      <span>Total Seats: {schedule.bus.totalSeats}</span>
                     </div>
                     <div className="flex items-center">
                       <MapPin className="h-4 w-4 mr-2" />
