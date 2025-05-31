@@ -15,12 +15,17 @@ import { Button } from "./ui/button";
 import { TooltipProvider } from "./ui/tooltip";
 import { format } from "date-fns";
 
+import { fetchSchedules, ScheduleResponse } from "@/api/scheduleApi";
+import SearchResults from "@/components/SearchResults";
+
 const HomePage = () => {
   const [searchResults, setSearchResults] = useState<{
     origin: string;
     destination: string;
     date: Date | undefined;
   } | null>(null);
+  
+  const [schedules, setSchedules] = useState<ScheduleResponse[]>([]);
 
   // Sample data for content blocks
   const [popularRoutes, setPopularRoutes] = useState([
@@ -160,13 +165,26 @@ const HomePage = () => {
     fetchData();
   }, []);
 
-  const handleSearch = (searchData: {
+  const handleSearch = async (searchData: {
     origin: string;
     destination: string;
     date: Date | undefined;
   }) => {
     setSearchResults(searchData);
-    console.log("Search data:", searchData);
+    if (searchData.origin && searchData.destination && searchData.date) {
+      try {
+        const formattedDate = searchData.date.toISOString().split("T")[0]; // yyyy-MM-dd
+        const result = await fetchSchedules(
+          searchData.origin,
+          searchData.destination,
+          formattedDate
+        );
+        setSchedules(result);
+      } catch (error) {
+        console.error("Failed to fetch schedules:", error);
+        setSchedules([]);
+      }
+    }
   };
 
   return (
@@ -176,7 +194,7 @@ const HomePage = () => {
         <nav className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10">
           <div className="container mx-auto flex justify-between items-center">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-primary">QuickBus</h1>
+              <h1 className="text-2xl font-bold text-primary">NextStop</h1>
             </div>
             <div className="hidden md:flex space-x-6">
               <a
@@ -276,12 +294,13 @@ const HomePage = () => {
         </div>
 
         {/* Search Results */}
+        {/* Search Results */}
         {searchResults && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="container mx-auto px-4 mt-8 bg-white rounded-xl shadow-md p-6 border border-gray-100"
+            className="container mx-auto max-w-4xl px-4 mt-8 bg-white rounded-xl shadow-md p-6 border border-gray-100"
           >
             <h3 className="text-xl font-bold mb-4">Search Results</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-gray-700">
@@ -302,13 +321,10 @@ const HomePage = () => {
                 </p>
               </div>
             </div>
-            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-              <p className="text-center text-gray-500">
-                Showing available buses for your search criteria...
-              </p>
-            </div>
+            <SearchResults schedules={schedules} /> {/* Replace the message with actual results */}
           </motion.div>
         )}
+
 
         {/* Content Blocks */}
         <div className="container mx-auto px-4 py-16">
