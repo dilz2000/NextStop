@@ -24,7 +24,10 @@ const SearchResults = ({ schedules }: SearchResultsProps) => {
     setSelectedSchedule(null);
   };
 
-  if (!schedules.length) {
+  // Filter schedules to show only those with bus.status = 'active'
+  const activeSchedules = schedules.filter((schedule) => schedule.status === 'active');
+
+  if (!activeSchedules.length) {
     return (
       <div className="mt-4 p-4 bg-gray-50 rounded-lg">
         <p className="text-center text-gray-500">No buses available.</p>
@@ -34,7 +37,7 @@ const SearchResults = ({ schedules }: SearchResultsProps) => {
 
   return (
     <div className="mt-4 space-y-4">
-      {schedules.map((schedule) => (
+      {activeSchedules.map((schedule) => (
         <div
           key={schedule.id}
           className="border rounded-lg p-4 bg-gray-50 shadow-sm"

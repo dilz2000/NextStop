@@ -14,6 +14,7 @@ import ContentBlock from "./ContentBlock";
 import { Button } from "./ui/button";
 import { TooltipProvider } from "./ui/tooltip";
 import { format } from "date-fns";
+import Navigation from "./Navigation";
 
 import { fetchSchedules, ScheduleResponse } from "@/api/scheduleApi";
 import SearchResults from "@/components/SearchResults";
@@ -191,54 +192,7 @@ const HomePage = () => {
     <TooltipProvider>
       <div className="min-h-screen bg-white">
         {/* Navigation Bar */}
-        <nav className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10">
-          <div className="container mx-auto flex justify-between items-center">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-primary">NextStop</h1>
-            </div>
-            <div className="hidden md:flex space-x-6">
-              <a
-                href="/"
-                className="text-primary font-medium transition-colors"
-              >
-                Home
-              </a>
-              <a
-                href="/ticket-booking"
-                className="text-gray-600 hover:text-primary transition-colors"
-              >
-                Book Tickets
-              </a>
-              <a
-                href="/my-bookings"
-                className="text-gray-600 hover:text-primary transition-colors"
-              >
-                My Bookings
-              </a>
-              <a
-                href="/support"
-                className="text-gray-600 hover:text-primary transition-colors"
-              >
-                Support
-              </a>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => (window.location.href = "/sign-in")}
-              >
-                Sign In
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => (window.location.href = "/register")}
-              >
-                Register
-              </Button>
-            </div>
-          </div>
-        </nav>
+        <Navigation currentPage="home" />
 
         {/* Hero Banner */}
         <div className="relative h-[500px] overflow-hidden">
@@ -294,7 +248,6 @@ const HomePage = () => {
         </div>
 
         {/* Search Results */}
-        {/* Search Results */}
         {searchResults && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -321,7 +274,7 @@ const HomePage = () => {
                 </p>
               </div>
             </div>
-            <SearchResults schedules={schedules} /> {/* Replace the message with actual results */}
+            <SearchResults schedules={schedules} /> 
           </motion.div>
         )}
 

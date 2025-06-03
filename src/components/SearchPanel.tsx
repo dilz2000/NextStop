@@ -37,12 +37,6 @@ const SearchPanel = ({ onSearch = () => {} }: SearchPanelProps) => {
     "Los Angeles, CA",
     "Chicago, IL",
     "Houston, TX",
-    "Phoenix, AZ",
-    "Philadelphia, PA",
-    "San Antonio, TX",
-    "San Diego, CA",
-    "Dallas, TX",
-    "San Jose, CA",
   ];
 
   const handleOriginChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -9,6 +9,7 @@ export interface ScheduleResponse {
     type: string;
     totalSeats: number;
     operatorName: string;
+    status: string;
   };
   route: {
     id: number;
@@ -16,10 +17,12 @@ export interface ScheduleResponse {
     destinationCity: string;
     distanceKm: number;
     duration: string;
+    status: string;
   };
   departureTime: string;
   arrivalTime: string;
   fare: number;
+  status: string;
 }
 
 export const fetchSchedules = async (
