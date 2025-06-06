@@ -9,6 +9,7 @@ import { fetchSeatAvailability, SeatAvailability } from "@/api/seatAvailabilityA
 interface SeatSelectionStepProps {
   selectedSchedule: ScheduleResponse | null;
   selectedSeats: string[];
+  travelDate: Date | undefined;
   onSeatSelection: (seatNumber: string) => void;
   onContinueToPayment: () => void;
   onBackToResults: () => void;
@@ -17,23 +18,37 @@ interface SeatSelectionStepProps {
 export const SeatSelectionStep: React.FC<SeatSelectionStepProps> = ({
   selectedSchedule,
   selectedSeats,
+  travelDate,
   onSeatSelection,
   onContinueToPayment,
   onBackToResults,
 }) => {
+
+  const formatDate = (date: Date | undefined) => {
+    if (!date) return '';
+    return date.toLocaleDateString('en-GB', { 
+      day: 'numeric', 
+      month: 'long', 
+      year: 'numeric' 
+    });
+  };
+
+  console.log("Formatted Date:", travelDate ? formatDate(travelDate) : 'No date');
+
   const [seatAvailability, setSeatAvailability] = useState<SeatAvailability[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadSeatAvailability = async () => {
-      if (!selectedSchedule) return;
-
+      if (!selectedSchedule || !travelDate) return; // Add travelDate check
+  
       setLoading(true);
       setError(null);
       
       try {
-        const availability = await fetchSeatAvailability(selectedSchedule.id);
+        const formattedDate = travelDate.toISOString().split("T")[0]; // Format date
+        const availability = await fetchSeatAvailability(selectedSchedule.id, formattedDate);
         setSeatAvailability(availability);
       } catch (error) {
         console.error('Failed to fetch seat availability:', error);
@@ -42,9 +57,10 @@ export const SeatSelectionStep: React.FC<SeatSelectionStepProps> = ({
         setLoading(false);
       }
     };
-
+  
     loadSeatAvailability();
-  }, [selectedSchedule]);
+  }, [selectedSchedule, travelDate]); // Add travelDate to dependency array
+  
 
   const formatTime = (dateTimeString: string) => {
     const date = new Date(dateTimeString);
@@ -82,7 +98,7 @@ export const SeatSelectionStep: React.FC<SeatSelectionStepProps> = ({
   if (loading) {
     return (
       <div className="w-full max-w-4xl mx-auto">
-        <h2 className="text-2xl font-bold mb-6">Select Your Seats</h2>
+        <h2 className="text-2xl font-bold mb-2">Select Your Seats</h2>
         <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-100 text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
           <p className="text-gray-500">Loading seat availability...</p>
@@ -107,7 +123,15 @@ export const SeatSelectionStep: React.FC<SeatSelectionStepProps> = ({
 
   return (
     <div className="w-full max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">Select Your Seats</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">Select Your Seats</h2>
+        {travelDate && (
+          <span className="text-lg text-gray-600">
+            {formatDate(travelDate)}
+          </span>
+        )}
+      </div>
+
       {selectedSchedule && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}

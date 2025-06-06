@@ -46,6 +46,7 @@ const TicketBooking = () => {
         return (
           <ResultsStep 
             schedules={schedules}
+            travelDate={searchResults?.date}
             onSelectBus={(schedule) => {
               setSelectedSchedule(schedule);
               setStep(3);
@@ -58,6 +59,7 @@ const TicketBooking = () => {
           <SeatSelectionStep 
             selectedSchedule={selectedSchedule}
             selectedSeats={selectedSeats}
+            travelDate={searchResults?.date} 
             onSeatSelection={(seatNumber) => {
               if (selectedSeats.includes(seatNumber)) {
                 setSelectedSeats(selectedSeats.filter((seat) => seat !== seatNumber));

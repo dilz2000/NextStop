@@ -84,14 +84,14 @@ const SearchResults = ({ schedules }: SearchResultsProps) => {
         </div>
 
         {/* Right: Book Now Button */}
-        <div className="flex flex-col items-end">
+        {/* <div className="flex flex-col items-end">
             <button
             className="bg-black text-white px-6 py-2 rounded-full font-semibold shadow hover:bg-gray-900 transition"
             onClick={() => handleBookNow(schedule.id)}
             >
             Book Now
             </button>
-        </div>
+        </div> */}
         </div>
 
         </div>
