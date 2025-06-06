@@ -3,12 +3,20 @@ export interface SeatAvailability {
     seatNumber: string;
     available: boolean;
   }
-  
-  export const fetchSeatAvailability = async (scheduleId: number): Promise<SeatAvailability[]> => {
-    console.log("SCHEDULE ID: ", scheduleId);
+
+  export const fetchSeatAvailability = async (scheduleId: number, travelDate: string): Promise<SeatAvailability[]> => {
+    console.log("SCHEDULE ID: ", scheduleId, "TRAVEL DATE: ", travelDate);
+    
+    // Add one day to the travel date
+    const adjustedDate = new Date(travelDate);
+    adjustedDate.setDate(adjustedDate.getDate() + 1);
+    const adjustedDateString = adjustedDate.toISOString().split("T")[0];
+    
+    console.log("ADJUSTED TRAVEL DATE: ", adjustedDateString);
+    
     try {
       const response = await fetch(
-        `http://localhost:8765/booking-service/v1/bookings/seats/availability/${scheduleId}`,
+        `http://localhost:8765/booking-service/v1/bookings/seats/availability/${scheduleId}?travelDate=${adjustedDateString}`,
         {
           method: 'GET',
           headers: {

@@ -1,197 +1,369 @@
-import React from "react";
-import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
-interface Route {
-  id: string;
-  name: string;
-}
-
-interface Bus {
-  id: string;
-  name: string;
-}
-
-interface NewSchedule {
-  routeId: string;
-  busId: string;
-  departureTime: Date;
-  arrivalTime: Date;
-  availableSeats: number;
-  isActive: boolean;
-}
+import React, { useState } from 'react';
+import { Plus, Loader2, CheckCircle, AlertCircle, Bus as BusIcon, MapPin, Clock, DollarSign } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { createSchedule, ScheduleCreateRequest, Bus, Route } from '../../../api/ScheduleMAnageApi';
 
 interface AddScheduleModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  newSchedule: NewSchedule;
-  setNewSchedule: React.Dispatch<React.SetStateAction<NewSchedule>>;
   onAddSchedule: () => void;
-  routes: Route[];
   buses: Bus[];
+  routes: Route[];
+}
+
+interface FormData {
+  busId: number | null;
+  routeId: number | null;
+  departureTime: string;
+  arrivalTime: string;
+  fare: string;
+}
+
+interface FormErrors {
+  busId?: string;
+  routeId?: string;
+  departureTime?: string;
+  arrivalTime?: string;
+  fare?: string;
 }
 
 const AddScheduleModal: React.FC<AddScheduleModalProps> = ({
   isOpen,
   onOpenChange,
-  newSchedule,
-  setNewSchedule,
   onAddSchedule,
-  routes,
   buses,
+  routes,
 }) => {
+  const [formData, setFormData] = useState<FormData>({
+    busId: null,
+    routeId: null,
+    departureTime: '',
+    arrivalTime: '',
+    fare: '',
+  });
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+    
+    if (!formData.busId) {
+      newErrors.busId = 'Bus selection is required';
+    }
+    
+    if (!formData.routeId) {
+      newErrors.routeId = 'Route selection is required';
+    }
+    
+    if (!formData.departureTime) {
+      newErrors.departureTime = 'Departure time is required';
+    }
+    
+    if (!formData.arrivalTime) {
+      newErrors.arrivalTime = 'Arrival time is required';
+    } else if (formData.departureTime && new Date(formData.arrivalTime) <= new Date(formData.departureTime)) {
+      newErrors.arrivalTime = 'Arrival time must be after departure time';
+    }
+    
+    if (!formData.fare) {
+      newErrors.fare = 'Fare is required';
+    } else if (isNaN(Number(formData.fare)) || Number(formData.fare) <= 0) {
+      newErrors.fare = 'Fare must be a positive number';
+    } else if (Number(formData.fare) > 10000) {
+      newErrors.fare = 'Fare cannot exceed $10,000';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleInputChange = (field: keyof FormData, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+    if (submitError) {
+      setSubmitError(null);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      busId: null,
+      routeId: null,
+      departureTime: '',
+      arrivalTime: '',
+      fare: '',
+    });
+    setErrors({});
+    setSubmitError(null);
+    setSubmitSuccess(false);
+  };
+
+  const handleSubmit = async () => {
+    if (!validateForm()) return;
+    
+    setLoading(true);
+    setSubmitError(null);
+    setSubmitSuccess(false);
+    
+    try {
+      const createData: ScheduleCreateRequest = {
+        bus: { id: formData.busId! },
+        route: { id: formData.routeId! },
+        departureTime: formData.departureTime,
+        arrivalTime: formData.arrivalTime,
+        fare: Number(formData.fare),
+      };
+      
+      await createSchedule(createData);
+      setSubmitSuccess(true);
+      
+      setTimeout(() => {
+        onAddSchedule();
+        resetForm();
+        onOpenChange(false);
+      }, 1500);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : 'Failed to create schedule');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClose = () => {
+    if (!loading) {
+      resetForm();
+      onOpenChange(false);
+    }
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    if (open) {
+      resetForm();
+    }
+    onOpenChange(open);
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" /> Add New Schedule
+        <Button className="flex items-center gap-2">
+          <Plus className="h-4 w-4" />
+          Add New Schedule
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Add New Schedule</DialogTitle>
+          <DialogTitle className="flex items-center gap-2 text-xl">
+            <Plus className="h-5 w-5 text-green-600" />
+            Add New Schedule
+          </DialogTitle>
           <DialogDescription>
-            Enter the details for the new schedule.
+            Create a new bus schedule with departure and arrival times.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="route" className="text-right">
-              Route
+        
+        <div className="grid gap-6 py-4">
+          {submitSuccess && (
+            <Alert className="border-green-200 bg-green-50">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-800">
+                Schedule created successfully!
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          {submitError && (
+            <Alert className="border-red-200 bg-red-50">
+              <AlertCircle className="h-4 w-4 text-red-600" />
+              <AlertDescription className="text-red-800">
+                {submitError}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Bus Selection */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <BusIcon className="h-4 w-4" />
+              Bus Operator *
             </Label>
-            <div className="col-span-3">
-              <Select
-                onValueChange={(value) =>
-                  setNewSchedule({ ...newSchedule, routeId: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a route" />
-                </SelectTrigger>
-                <SelectContent>
-                  {routes.map((route) => (
-                    <SelectItem key={route.id} value={route.id}>
-                      {route.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Select
+              value={formData.busId?.toString() || ''}
+              onValueChange={(value) => handleInputChange('busId', Number(value))}
+              disabled={loading}
+            >
+              <SelectTrigger className={errors.busId ? 'border-red-500' : ''}>
+                <SelectValue placeholder="Select a bus operator" />
+              </SelectTrigger>
+              <SelectContent>
+                {buses.filter(bus => bus.status === 'active').map((bus) => (
+                  <SelectItem key={bus.id} value={bus.id.toString()}>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{bus.operatorName}</span>
+                      <span className="text-sm text-gray-500">({bus.busNumber})</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.busId && (
+              <p className="text-sm text-red-600 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {errors.busId}
+              </p>
+            )}
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="bus" className="text-right">
-              Bus
+
+          {/* Route Selection */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              Route *
             </Label>
-            <div className="col-span-3">
-              <Select
-                onValueChange={(value) =>
-                  setNewSchedule({ ...newSchedule, busId: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a bus" />
-                </SelectTrigger>
-                <SelectContent>
-                  {buses.map((bus) => (
-                    <SelectItem key={bus.id} value={bus.id}>
-                      {bus.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Select
+              value={formData.routeId?.toString() || ''}
+              onValueChange={(value) => handleInputChange('routeId', Number(value))}
+              disabled={loading}
+            >
+              <SelectTrigger className={errors.routeId ? 'border-red-500' : ''}>
+                <SelectValue placeholder="Select a route" />
+              </SelectTrigger>
+              <SelectContent>
+                {routes.filter(route => route.status === 'active').map((route) => (
+                  <SelectItem key={route.id} value={route.id.toString()}>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{route.sourceCity}</span>
+                      <span className="text-gray-400">→</span>
+                      <span className="font-medium">{route.destinationCity}</span>
+                      <span className="text-sm text-gray-500">({route.distanceKm}km)</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.routeId && (
+              <p className="text-sm text-red-600 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {errors.routeId}
+              </p>
+            )}
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="departureTime" className="text-right">
-              Departure Time
+
+          {/* Departure Time */}
+          <div className="space-y-2">
+            <Label htmlFor="departureTime" className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              Departure Time *
             </Label>
             <Input
               id="departureTime"
               type="datetime-local"
-              onChange={(e) =>
-                setNewSchedule({
-                  ...newSchedule,
-                  departureTime: new Date(e.target.value),
-                })
-              }
-              className="col-span-3"
+              value={formData.departureTime}
+              onChange={(e) => handleInputChange('departureTime', e.target.value)}
+              className={errors.departureTime ? 'border-red-500' : ''}
+              disabled={loading}
             />
+            {errors.departureTime && (
+              <p className="text-sm text-red-600 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {errors.departureTime}
+              </p>
+            )}
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="arrivalTime" className="text-right">
-              Arrival Time
+
+          {/* Arrival Time */}
+          <div className="space-y-2">
+            <Label htmlFor="arrivalTime" className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              Arrival Time *
             </Label>
             <Input
               id="arrivalTime"
               type="datetime-local"
-              onChange={(e) =>
-                setNewSchedule({
-                  ...newSchedule,
-                  arrivalTime: new Date(e.target.value),
-                })
-              }
-              className="col-span-3"
+              value={formData.arrivalTime}
+              onChange={(e) => handleInputChange('arrivalTime', e.target.value)}
+              className={errors.arrivalTime ? 'border-red-500' : ''}
+              disabled={loading}
             />
+            {errors.arrivalTime && (
+              <p className="text-sm text-red-600 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {errors.arrivalTime}
+              </p>
+            )}
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="availableSeats" className="text-right">
-              Available Seats
+
+          {/* Fare */}
+          <div className="space-y-2">
+            <Label htmlFor="fare" className="flex items-center gap-2">
+              <DollarSign className="h-4 w-4" />
+              Fare ($) *
             </Label>
             <Input
-              id="availableSeats"
+              id="fare"
               type="number"
-              value={newSchedule.availableSeats}
-              onChange={(e) =>
-                setNewSchedule({
-                  ...newSchedule,
-                  availableSeats: parseInt(e.target.value) || 0,
-                })
-              }
-              className="col-span-3"
+              value={formData.fare}
+              onChange={(e) => handleInputChange('fare', e.target.value)}
+              className={errors.fare ? 'border-red-500' : ''}
+              placeholder="Enter fare amount"
+              min="0"
+              max="10000"
+              step="0.01"
+              disabled={loading}
             />
+            {errors.fare && (
+              <p className="text-sm text-red-600 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {errors.fare}
+              </p>
+            )}
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="isActive" className="text-right">
-              Active
-            </Label>
-            <div className="col-span-3">
-              <Checkbox
-                id="isActive"
-                checked={newSchedule.isActive}
-                onCheckedChange={(checked) =>
-                  setNewSchedule({ ...newSchedule, isActive: !!checked })
-                }
-              />
-            </div>
+
+          <div className="text-xs text-gray-500 bg-gray-50 p-2 rounded">
+            <span className="text-red-500">*</span> Required fields
           </div>
         </div>
-        <DialogFooter>
+
+        <DialogFooter className="gap-2">
           <Button
             variant="outline"
-            onClick={() => onOpenChange(false)}
+            onClick={handleClose}
+            disabled={loading}
           >
             Cancel
           </Button>
-          <Button onClick={onAddSchedule}>Save</Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={loading || submitSuccess}
+            className="min-w-[120px]"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating...
+              </>
+            ) : submitSuccess ? (
+              <>
+                <CheckCircle className="mr-2 h-4 w-4" />
+                Created
+              </>
+            ) : (
+              <>
+                <Plus className="mr-2 h-4 w-4" />
+                Create Schedule
+              </>
+            )}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

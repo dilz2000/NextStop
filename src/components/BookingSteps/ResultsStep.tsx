@@ -6,12 +6,14 @@ import { ScheduleResponse } from "@/api/scheduleApi";
 
 interface ResultsStepProps {
   schedules: ScheduleResponse[];
+  travelDate: Date | undefined; 
   onSelectBus: (schedule: ScheduleResponse) => void;
   onBackToSearch: () => void;
 }
 
 export const ResultsStep: React.FC<ResultsStepProps> = ({
   schedules,
+  travelDate,
   onSelectBus,
   onBackToSearch,
 }) => {
@@ -24,6 +26,18 @@ export const ResultsStep: React.FC<ResultsStepProps> = ({
     });
   };
 
+  // Filter schedules to show only those with schedule.status = 'active'
+  const activeSchedules = schedules.filter((schedule) => schedule.status === 'active');
+
+  const formatDate = (date: Date | undefined) => {
+    if (!date) return '';
+    return date.toLocaleDateString('en-GB', { 
+      day: 'numeric', 
+      month: 'long', 
+      year: 'numeric' 
+    });
+  };  
+
   const formatDuration = (duration: string) => {
     const [hours, minutes] = duration.split(':');
     return `${parseInt(hours)}h ${parseInt(minutes)}m`;
@@ -35,8 +49,10 @@ export const ResultsStep: React.FC<ResultsStepProps> = ({
 
   return (
     <div className="w-full max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">Available Buses</h2>
-      {schedules.length === 0 ? (
+      <h2 className="text-2xl font-bold mb-6">
+        Available Buses{travelDate ? ` on ${formatDate(travelDate)}` : ''}
+      </h2>
+      {activeSchedules.length === 0 ? (
         <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-100 text-center">
           <p className="text-gray-500">No buses available for the selected route and date.</p>
           <Button className="mt-4" variant="outline" onClick={onBackToSearch}>
@@ -45,7 +61,7 @@ export const ResultsStep: React.FC<ResultsStepProps> = ({
         </div>
       ) : (
         <div className="space-y-4">
-          {schedules.map((schedule, index) => (
+          {activeSchedules.map((schedule, index) => (
             <motion.div
               key={schedule.id}
               initial={{ opacity: 0, y: 20 }}
