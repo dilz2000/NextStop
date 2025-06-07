@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, AlertCircle, CheckCircle, Edit, Bus as BusIcon, MapPin, Clock, DollarSign, Activity } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { updateSchedule, ScheduleUpdateRequest, Schedule, Bus, Route } from '../../../api/ScheduleMAnageApi';
+import { updateSchedule, ScheduleUpdateRequest, Schedule, Bus, Route } from '../../../api/ScheduleManageApi';
 
 interface EditScheduleModalProps {
   isOpen: boolean;

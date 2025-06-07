@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { createSchedule, ScheduleCreateRequest, Bus, Route } from '../../../api/ScheduleMAnageApi';
+import { createSchedule, ScheduleCreateRequest, Bus, Route } from '../../../api/ScheduleManageApi';
 
 interface AddScheduleModalProps {
   isOpen: boolean;

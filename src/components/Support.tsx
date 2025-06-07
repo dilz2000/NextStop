@@ -60,7 +60,7 @@ const Support = () => {
                 Speak directly with our customer support team
               </p>
               <p className="text-lg font-medium text-primary mb-2">
-                1-800-BUS-BOOK
+                1-800-NEXT-STOP
               </p>
               <p className="text-sm text-gray-500">
                 Available 24/7 for urgent matters
@@ -90,7 +90,7 @@ const Support = () => {
                 Send us an email and we'll respond within 24 hours
               </p>
               <p className="text-lg font-medium text-primary mb-2">
-                support@busbooker.com
+                support@nextstop.com
               </p>
               <p className="text-sm text-gray-500">For non-urgent inquiries</p>
             </div>

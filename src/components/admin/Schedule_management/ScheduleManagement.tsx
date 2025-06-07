@@ -8,7 +8,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Badge } from '@/components/ui/badge';
 import AddScheduleModal from './AddScheduleModal';
 import EditScheduleModal from './EditScheduleModal';
-import { fetchAllSchedules, fetchAllBuses, fetchAllRoutes, Schedule, Bus, Route } from '../../../api/ScheduleMAnageApi';
+import { fetchAllSchedules, fetchAllBuses, fetchAllRoutes, Schedule, Bus, Route } from '../../../api/ScheduleManageApi';
 
 const ScheduleManagement = () => {
   const [schedules, setSchedules] = useState<Schedule[]>([]);

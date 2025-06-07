@@ -57,10 +57,12 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage = "" }) => {
           </a>
         </div>
         <div className="flex items-center space-x-4">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => window.location.href = '/login'}>
             Sign In
+         </Button>
+          <Button size="sm" onClick={() => window.location.href = '/register'}>
+            Register
           </Button>
-          <Button size="sm">Register</Button>
         </div>
       </div>
     </nav>
