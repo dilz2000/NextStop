@@ -154,12 +154,10 @@ const HomePage = () => {
     },
   ]);
 
-  // In a real application, you would fetch this data from an API
   useEffect(() => {
-    // Simulate API call
+  
     const fetchData = async () => {
-      // Here you would make actual API calls
-      // For now, we're using the static data initialized above
+      
       console.log("Data loaded successfully");
     };
 
@@ -331,10 +329,10 @@ const HomePage = () => {
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
               <div>
-                <h3 className="text-lg font-bold mb-4">QuickBus</h3>
+                <h3 className="text-lg font-bold mb-4">NextStop</h3>
                 <p className="text-gray-600">
                   Making bus travel simple, convenient, and enjoyable since
-                  2023. Our mission is to connect people and places with
+                  2025. Our mission is to connect people and places with
                   reliable, comfortable, and affordable bus transportation.
                 </p>
               </div>
@@ -447,7 +445,7 @@ const HomePage = () => {
               </div>
             </div>
             <div className="mt-8 pt-8 border-t border-gray-200 text-center text-gray-500">
-              <p>&copy; 2025 QuickBus. All rights reserved.</p>
+              <p>&copy; 2025 NextStop. All rights reserved.</p>
             </div>
           </div>
         </footer>
