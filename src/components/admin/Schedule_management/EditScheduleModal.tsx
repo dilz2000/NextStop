@@ -75,15 +75,28 @@ const EditScheduleModal: React.FC<EditScheduleModalProps> = ({
     }
   }, [currentSchedule]);
 
+
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
     
     if (!formData.busId) {
       newErrors.busId = 'Bus selection is required';
+    } else {
+      // Check if selected bus is inactive
+      const selectedBus = buses.find(bus => bus.id === formData.busId);
+      if (!selectedBus || selectedBus.status === 'inactive') {
+        newErrors.busId = 'Selected bus is inactive. Please choose an active bus.';
+      }
     }
     
     if (!formData.routeId) {
       newErrors.routeId = 'Route selection is required';
+    } else {
+      // Check if selected route is inactive
+      const selectedRoute = routes.find(route => route.id === formData.routeId);
+      if (!selectedRoute || selectedRoute.status === 'inactive') {
+        newErrors.routeId = 'Selected route is inactive. Please choose an active route.';
+      }
     }
     
     if (!formData.departureTime) {
@@ -100,13 +113,14 @@ const EditScheduleModal: React.FC<EditScheduleModalProps> = ({
       newErrors.fare = 'Fare is required';
     } else if (isNaN(Number(formData.fare)) || Number(formData.fare) <= 0) {
       newErrors.fare = 'Fare must be a positive number';
-    } else if (Number(formData.fare) > 10000) {
-      newErrors.fare = 'Fare cannot exceed $10,000';
+    } else if (Number(formData.fare) > 100000) {
+      newErrors.fare = 'Fare cannot exceed LKR 100,000';
     }
-
+  
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+  
 
   const handleInputChange = (field: keyof FormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -220,11 +234,21 @@ const EditScheduleModal: React.FC<EditScheduleModalProps> = ({
                 <SelectValue placeholder="Select a bus operator" />
               </SelectTrigger>
               <SelectContent>
+                {/* Show all buses but mark inactive ones */}
                 {buses.map((bus) => (
-                  <SelectItem key={bus.id} value={bus.id.toString()}>
+                  <SelectItem 
+                    key={bus.id} 
+                    value={bus.id.toString()}
+                    disabled={bus.status === 'inactive'}
+                  >
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{bus.operatorName}</span>
                       <span className="text-sm text-gray-500">({bus.busNumber})</span>
+                      {bus.status === 'inactive' && (
+                        <span className="text-xs bg-red-100 text-red-700 px-1 rounded">
+                          Inactive
+                        </span>
+                      )}
                     </div>
                   </SelectItem>
                 ))}
@@ -235,6 +259,15 @@ const EditScheduleModal: React.FC<EditScheduleModalProps> = ({
                 <AlertCircle className="h-3 w-3" />
                 {errors.busId}
               </p>
+            )}
+            {/* Show warning if current selection is inactive */}
+            {formData.busId && buses.find(b => b.id === formData.busId)?.status === 'inactive' && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded p-2">
+                <p className="text-sm text-yellow-800 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  Warning: Currently selected bus is inactive. Please select an active bus.
+                </p>
+              </div>
             )}
           </div>
 
@@ -253,13 +286,23 @@ const EditScheduleModal: React.FC<EditScheduleModalProps> = ({
                 <SelectValue placeholder="Select a route" />
               </SelectTrigger>
               <SelectContent>
+                {/* Show all routes but mark inactive ones */}
                 {routes.map((route) => (
-                  <SelectItem key={route.id} value={route.id.toString()}>
+                  <SelectItem 
+                    key={route.id} 
+                    value={route.id.toString()}
+                    disabled={route.status === 'inactive'}
+                  >
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{route.sourceCity}</span>
                       <span className="text-gray-400">→</span>
                       <span className="font-medium">{route.destinationCity}</span>
                       <span className="text-sm text-gray-500">({route.distanceKm}km)</span>
+                      {route.status === 'inactive' && (
+                        <span className="text-xs bg-red-100 text-red-700 px-1 rounded">
+                          Inactive
+                        </span>
+                      )}
                     </div>
                   </SelectItem>
                 ))}
@@ -271,7 +314,17 @@ const EditScheduleModal: React.FC<EditScheduleModalProps> = ({
                 {errors.routeId}
               </p>
             )}
+            {/* Show warning if current selection is inactive */}
+            {formData.routeId && routes.find(r => r.id === formData.routeId)?.status === 'inactive' && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded p-2">
+                <p className="text-sm text-yellow-800 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  Warning: Currently selected route is inactive. Please select an active route.
+                </p>
+              </div>
+            )}
           </div>
+
 
           {/* Departure Time */}
           <div className="space-y-2">
@@ -321,7 +374,7 @@ const EditScheduleModal: React.FC<EditScheduleModalProps> = ({
           <div className="space-y-2">
             <Label htmlFor="edit-fare" className="flex items-center gap-2">
               <DollarSign className="h-4 w-4" />
-              Fare ($) *
+              Fare (LKR) *
             </Label>
             <Input
               id="edit-fare"

@@ -307,7 +307,7 @@ const AddScheduleModal: React.FC<AddScheduleModalProps> = ({
           <div className="space-y-2">
             <Label htmlFor="fare" className="flex items-center gap-2">
               <DollarSign className="h-4 w-4" />
-              Fare ($) *
+              Fare (LKR) *
             </Label>
             <Input
               id="fare"

@@ -1,5 +1,6 @@
-const BASE_URL = 'http://localhost:8765/bus-service';
 
+// const BASE_URL = 'http://localhost:8765/bus-service';
+const BASE_URL = 'http://localhost:8080';
 
 // GET ALL BUSES
 export interface BusFromAPI {
@@ -105,3 +106,57 @@ export const createBus = async (busData: BusCreateRequest): Promise<void> => {
     throw error;
   }
 };
+
+
+export const updateBusWithSchedules = async (id: number, busData: BusUpdateRequest): Promise<void> => {
+  try {
+    // First update the bus
+    await updateBus(id, busData);
+    
+    // If bus status is set to inactive, update related schedules
+    if (busData.status === 'inactive') {
+      await updateSchedulesForInactiveBus(id);
+    }
+  } catch (error) {
+    console.error('Error updating bus with schedules:', error);
+    throw error;
+  }
+};
+
+const updateSchedulesForInactiveBus = async (busId: number): Promise<void> => {
+  try {
+    // Fetch all schedules
+    const response = await fetch(`${BASE_URL}/schedules/getAllSchedules`);
+    if (!response.ok) throw new Error('Failed to fetch schedules');
+    
+    const schedules = await response.json();
+    
+    // Find schedules with the specific bus ID that are currently active
+    const schedulesToUpdate = schedules.filter((schedule: any) => 
+      schedule.bus.id === busId && schedule.status === 'active'
+    );
+    
+    // Update each schedule to inactive
+    const updatePromises = schedulesToUpdate.map((schedule: any) => 
+      fetch(`${BASE_URL}/schedules/updateSchedule/${schedule.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bus: { id: schedule.bus.id },
+          route: { id: schedule.route.id },
+          departureTime: schedule.departureTime,
+          arrivalTime: schedule.arrivalTime,
+          fare: schedule.fare,
+          status: 'inactive'
+        })
+      })
+    );
+    
+    await Promise.all(updatePromises);
+  } catch (error) {
+    console.error('Error updating schedules for inactive bus:', error);
+    throw error;
+  }
+};
+
+

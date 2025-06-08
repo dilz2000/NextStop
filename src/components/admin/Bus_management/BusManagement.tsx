@@ -15,6 +15,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Table,
   TableBody,
   TableCell,
@@ -64,6 +71,8 @@ const BusManagement = () => {
     status: 'active',
     amenities: [],
   });
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+
 
   // Load buses from API
   const loadBuses = async () => {
@@ -85,16 +94,21 @@ const BusManagement = () => {
     loadBuses();
   }, []);
 
-  // Filter buses based on search term
   useEffect(() => {
-    const filtered = buses.filter(
+    let filtered = buses.filter(
       (bus) =>
         bus.busNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
         bus.operatorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         bus.type.toLowerCase().includes(searchTerm.toLowerCase())
     );
+  
+    // Apply status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(bus => bus.status === statusFilter);
+    }
+  
     setFilteredBuses(filtered);
-  }, [buses, searchTerm]);
+  }, [buses, searchTerm, statusFilter]);
 
   const handleAddBus = async () => {
     // Reload buses from API to reflect changes
@@ -129,11 +143,18 @@ const BusManagement = () => {
     return type === 'AC' ? '❄️' : '🌡️';
   };
 
-  // Calculate statistics
-  const totalBuses = buses.length;
-  const activeBuses = buses.filter(bus => bus.status === 'active').length;
-  const totalSeats = buses.reduce((sum, bus) => sum + bus.totalSeats, 0);
-  const uniqueOperators = new Set(buses.map(bus => bus.operatorName)).size;
+  const getFilteredStats = () => {
+    const currentBuses = statusFilter === 'all' ? buses : buses.filter(bus => bus.status === statusFilter);
+    return {
+      total: currentBuses.length,
+      active: currentBuses.filter(bus => bus.status === 'active').length,
+      totalSeats: currentBuses.reduce((sum, bus) => sum + bus.totalSeats, 0),
+      uniqueOperators: new Set(currentBuses.map(bus => bus.operatorName)).size
+    };
+  };
+
+  const stats = getFilteredStats();
+
 
   if (loading) {
     return (
@@ -203,7 +224,7 @@ const BusManagement = () => {
             <BusIcon className="h-8 w-8 text-blue-600" />
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Buses</p>
-              <p className="text-2xl font-bold text-gray-900">{totalBuses}</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
             </div>
           </div>
         </motion.div>
@@ -218,7 +239,7 @@ const BusManagement = () => {
             <Activity className="h-8 w-8 text-green-600" />
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Active Buses</p>
-              <p className="text-2xl font-bold text-gray-900">{activeBuses}</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.active}</p>
             </div>
           </div>
         </motion.div>
@@ -233,7 +254,7 @@ const BusManagement = () => {
             <Users className="h-8 w-8 text-purple-600" />
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Seats</p>
-              <p className="text-2xl font-bold text-gray-900">{totalSeats}</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.totalSeats}</p>
             </div>
           </div>
         </motion.div>
@@ -248,29 +269,95 @@ const BusManagement = () => {
             <BusIcon className="h-8 w-8 text-orange-600" />
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Operators</p>
-              <p className="text-2xl font-bold text-gray-900">{uniqueOperators}</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.uniqueOperators}</p>
             </div>
           </div>
         </motion.div>
       </div>
-
-      {/* Search */}
-      <div className="bg-white p-4 rounded-lg border shadow-sm">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-          <Input
-            placeholder="Search buses by number, operator, or type..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+     
+      {/* Search and Filter Section */}
+      <div className="bg-white p-4 rounded-lg border shadow-sm space-y-4">
+        <div className="flex flex-col md:flex-row gap-4">
+          {/* Search Input */}
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <Input
+              placeholder="Search buses by number, operator, or type..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          
+          {/* Status Filter */}
+          <div className="flex items-center gap-2 min-w-[200px]">
+            <Activity className="h-4 w-4 text-gray-500" />
+            <Select
+              value={statusFilter}
+              onValueChange={(value: 'all' | 'active' | 'inactive') => setStatusFilter(value)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                    <span>All Buses</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="active">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span>Active Only</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="inactive">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <span>Inactive Only</span>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-        {searchTerm && (
-          <p className="text-sm text-gray-600 mt-2">
-            Found {filteredBuses.length} bus(es) matching "{searchTerm}"
-          </p>
+        
+        {/* Filter Results Info */}
+        {(searchTerm || statusFilter !== 'all') && (
+          <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
+            <span>
+              Found {filteredBuses.length} bus(es)
+            </span>
+            {searchTerm && (
+              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                matching "{searchTerm}"
+              </span>
+            )}
+            {statusFilter !== 'all' && (
+              <span className={`px-2 py-1 rounded-full text-xs ${
+                statusFilter === 'active' 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-red-100 text-red-800'
+              }`}>
+                {statusFilter} status
+              </span>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSearchTerm('');
+                setStatusFilter('all');
+              }}
+              className="text-xs text-gray-500 hover:text-gray-700"
+            >
+              Clear filters
+            </Button>
+          </div>
         )}
       </div>
+
 
       {/* Bus Table */}
       <motion.div

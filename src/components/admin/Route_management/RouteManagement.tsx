@@ -1,216 +1,4 @@
 
-// import React, { useState, useEffect } from "react";
-// import { Search, MapPin, Loader2, RefreshCw, AlertCircle, Pencil, Trash2 } from "lucide-react";
-// import { Button } from "@/components/ui/button";
-// import { Input } from "@/components/ui/input";
-// import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-// import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-// import AddRouteModal from "./AddRouteModal";
-// import EditRouteModal from "./EditRouteModal";
-// import { fetchAllRoutes, Route } from "../../../api/routeApi";
-
-// const RouteManagement: React.FC = () => {
-//   const [routes, setRoutes] = useState<Route[]>([]);
-//   const [filteredRoutes, setFilteredRoutes] = useState<Route[]>([]);
-//   const [searchTerm, setSearchTerm] = useState("");
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState<string | null>(null);
-//   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-//   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-//   const [currentRoute, setCurrentRoute] = useState<Route | null>(null);
-
-//   const loadRoutes = async () => {
-//     setLoading(true);
-//     setError(null);
-//     try {
-//       const data = await fetchAllRoutes();
-//       setRoutes(data);
-//       setFilteredRoutes(data);
-//     } catch (err) {
-//       setError("Failed to load routes. Please try again later.");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   useEffect(() => { loadRoutes(); }, []);
-
-//   useEffect(() => {
-//     const filtered = routes.filter(
-//       (r) =>
-//         r.sourceCity.toLowerCase().includes(searchTerm.toLowerCase()) ||
-//         r.destinationCity.toLowerCase().includes(searchTerm.toLowerCase())
-//     );
-//     setFilteredRoutes(filtered);
-//   }, [routes, searchTerm]);
-
-//   const handleAddRoute = async () => {
-//     await loadRoutes();
-//     setIsAddDialogOpen(false);
-//   };
-
-//   const handleEditRoute = async () => {
-//     await loadRoutes();
-//     setIsEditDialogOpen(false);
-//   };
-
-//   const handleDeleteRoute = (id: number) => {
-//     setRoutes(routes.filter((r) => r.id !== id));
-//   };
-
-//   const openEditDialog = (route: Route) => {
-//     setCurrentRoute({ ...route });
-//     setIsEditDialogOpen(true);
-//   };
-
-//   if (loading) {
-//     return (
-//       <div className="flex items-center justify-center min-h-[400px]">
-//         <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-//       </div>
-//     );
-//   }
-
-//   if (error) {
-//     return (
-//       <div className="flex items-center justify-center min-h-[400px]">
-//         <div className="text-center">
-//           <AlertCircle className="h-12 w-12 mx-auto mb-4 text-red-500" />
-//           <h3 className="text-lg font-semibold mb-2">Error Loading Routes</h3>
-//           <p className="text-gray-600 mb-4">{error}</p>
-//           <Button onClick={loadRoutes} className="flex items-center gap-2">
-//             <RefreshCw className="h-4 w-4" />
-//             Retry
-//           </Button>
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div>
-//       <div className="flex justify-between items-center mb-6">
-//         <h1 className="text-2xl font-bold flex items-center gap-2">
-//           <MapPin className="h-7 w-7 text-blue-600" />
-//           Route Management
-//         </h1>
-//         <AddRouteModal
-//           isOpen={isAddDialogOpen}
-//           onOpenChange={setIsAddDialogOpen}
-//           onAddRoute={handleAddRoute}
-//         />
-//       </div>
-
-//       <div className="mb-6">
-//         <div className="relative">
-//           <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
-//           <Input
-//             placeholder="Search routes by source or destination"
-//             value={searchTerm}
-//             onChange={(e) => setSearchTerm(e.target.value)}
-//             className="pl-8"
-//           />
-//         </div>
-//       </div>
-
-//       <div className="rounded-md border bg-white">
-//         <Table>
-//           <TableHeader>
-//             <TableRow>
-//               <TableHead>ID</TableHead>
-//               <TableHead>Source</TableHead>
-//               <TableHead>Destination</TableHead>
-//               <TableHead>Distance (km)</TableHead>
-//               <TableHead>Duration</TableHead>
-//               <TableHead>Status</TableHead>
-//               <TableHead className="text-right">Actions</TableHead>
-//             </TableRow>
-//           </TableHeader>
-//           <TableBody>
-//             {filteredRoutes.length > 0 ? (
-//               filteredRoutes.map((route) => (
-//                 <TableRow key={route.id}>
-//                   <TableCell>{route.id}</TableCell>
-//                   <TableCell>{route.sourceCity}</TableCell>
-//                   <TableCell>{route.destinationCity}</TableCell>
-//                   <TableCell>{route.distanceKm}</TableCell>
-//                   <TableCell>{route.duration}</TableCell>
-//                   <TableCell>
-//                     <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${route.status === "active"
-//                         ? "bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20"
-//                         : "bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20"
-//                       }`}>
-//                       {route.status === "active" ? "Active" : "Inactive"}
-//                     </span>
-//                   </TableCell>
-//                   <TableCell className="text-right">
-//                     <div className="flex justify-end space-x-2">
-//                       <Button
-//                         variant="outline"
-//                         size="sm"
-//                         onClick={() => openEditDialog(route)}
-//                       >
-//                          <Pencil className="h-4 w-4" />
-//                       </Button>
-//                       <AlertDialog>
-//                         <AlertDialogTrigger asChild>
-//                           <Button variant="outline" size="sm">
-//                           <Trash2 className="h-4 w-4 text-red-500" />
-//                           </Button>
-//                         </AlertDialogTrigger>
-//                         <AlertDialogContent>
-//                           <AlertDialogHeader>
-//                             <AlertDialogTitle>
-//                               Are you sure you want to delete this route?
-//                             </AlertDialogTitle>
-//                             <AlertDialogDescription>
-//                               This action cannot be undone. This will permanently delete the route.
-//                             </AlertDialogDescription>
-//                           </AlertDialogHeader>
-//                           <AlertDialogFooter>
-//                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-//                             <AlertDialogAction
-//                               onClick={() => handleDeleteRoute(route.id)}
-//                               className="bg-red-500 hover:bg-red-600"
-//                             >
-//                               Delete
-//                             </AlertDialogAction>
-//                           </AlertDialogFooter>
-//                         </AlertDialogContent>
-//                       </AlertDialog>
-//                     </div>
-//                   </TableCell>
-//                 </TableRow>
-//               ))
-//             ) : (
-//               <TableRow>
-//                 <TableCell colSpan={7} className="text-center py-4">
-//                   No routes found
-//                 </TableCell>
-//               </TableRow>
-//             )}
-//           </TableBody>
-//         </Table>
-//       </div>
-
-//       <EditRouteModal
-//         isOpen={isEditDialogOpen}
-//         onOpenChange={setIsEditDialogOpen}
-//         currentRoute={currentRoute}
-//         setCurrentRoute={setCurrentRoute}
-//         onEditRoute={handleEditRoute}
-//       />
-//     </div>
-//   );
-// };
-
-// export default RouteManagement;
-
-
-
-//////////////////
-
-
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
@@ -235,6 +23,13 @@ import { Badge } from "@/components/ui/badge";
 import AddRouteModal from "./AddRouteModal";
 import EditRouteModal from "./EditRouteModal";
 import { fetchAllRoutes, Route } from "../../../api/routeApi";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const RouteManagement: React.FC = () => {
   const [routes, setRoutes] = useState<Route[]>([]);
@@ -245,6 +40,7 @@ const RouteManagement: React.FC = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [currentRoute, setCurrentRoute] = useState<Route | null>(null);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
 
   const loadRoutes = async () => {
     setLoading(true);
@@ -263,13 +59,17 @@ const RouteManagement: React.FC = () => {
   useEffect(() => { loadRoutes(); }, []);
 
   useEffect(() => {
-    const filtered = routes.filter(
+    let filtered = routes.filter(
       (r) =>
         r.sourceCity.toLowerCase().includes(searchTerm.toLowerCase()) ||
         r.destinationCity.toLowerCase().includes(searchTerm.toLowerCase())
     );
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(route => route.status === statusFilter);
+    }
     setFilteredRoutes(filtered);
-  }, [routes, searchTerm]);
+  }, [routes, searchTerm, statusFilter]);
+  
 
   const handleAddRoute = async () => {
     await loadRoutes();
@@ -291,14 +91,20 @@ const RouteManagement: React.FC = () => {
   };
 
   // Calculate statistics
-  const totalRoutes = routes.length;
-  const activeRoutes = routes.filter(route => route.status === 'active').length;
-  const totalDistance = routes.reduce((sum, route) => sum + route.distanceKm, 0);
-  const uniqueCities = new Set([
-    ...routes.map(r => r.sourceCity),
-    ...routes.map(r => r.destinationCity)
-  ]).size;
-
+  const getFilteredStats = () => {
+    const currentRoutes = statusFilter === 'all' ? routes : routes.filter(route => route.status === statusFilter);
+    return {
+      total: currentRoutes.length,
+      active: currentRoutes.filter(route => route.status === 'active').length,
+      totalDistance: currentRoutes.reduce((sum, route) => sum + route.distanceKm, 0),
+      uniqueCities: new Set([
+        ...currentRoutes.map(r => r.sourceCity),
+        ...currentRoutes.map(r => r.destinationCity)
+      ]).size
+    };
+  };
+  
+  const stats = getFilteredStats();
   // Format duration
   const formatDuration = (duration: string) => {
     const parts = duration.split(':');
@@ -373,7 +179,7 @@ const RouteManagement: React.FC = () => {
             <RouteIcon className="h-8 w-8 text-blue-600" />
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Routes</p>
-              <p className="text-2xl font-bold text-gray-900">{totalRoutes}</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
             </div>
           </div>
         </motion.div>
@@ -388,7 +194,7 @@ const RouteManagement: React.FC = () => {
             <Navigation className="h-8 w-8 text-green-600" />
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Active Routes</p>
-              <p className="text-2xl font-bold text-gray-900">{activeRoutes}</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.active}</p>
             </div>
           </div>
         </motion.div>
@@ -403,7 +209,7 @@ const RouteManagement: React.FC = () => {
             <Ruler className="h-8 w-8 text-purple-600" />
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Distance</p>
-              <p className="text-2xl font-bold text-gray-900">{totalDistance.toLocaleString()} km</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.totalDistance.toLocaleString()} km</p>
             </div>
           </div>
         </motion.div>
@@ -418,29 +224,57 @@ const RouteManagement: React.FC = () => {
             <MapPin className="h-8 w-8 text-orange-600" />
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Cities Connected</p>
-              <p className="text-2xl font-bold text-gray-900">{uniqueCities}</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.uniqueCities}</p>
             </div>
           </div>
         </motion.div>
       </div>
 
-      {/* Search */}
-      <div className="bg-white p-4 rounded-lg border shadow-sm">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-          <Input
-            placeholder="Search routes by source or destination city..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        {searchTerm && (
-          <p className="text-sm text-gray-600 mt-2">
-            Found {filteredRoutes.length} route(s) matching "{searchTerm}"
-          </p>
-        )}
+      <div className="flex flex-col md:flex-row gap-4">
+      {/* Search Input */}
+      <div className="relative flex-1">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+        <Input
+          placeholder="Search routes by source or destination city..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-10"
+        />
       </div>
+      {/* Status Filter */}
+      <div className="flex items-center gap-2 min-w-[200px]">
+        <MapPin className="h-4 w-4 text-gray-500" />
+        <Select
+          value={statusFilter}
+          onValueChange={(value: 'all' | 'active' | 'inactive') => setStatusFilter(value)}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                <span>All Routes</span>
+              </div>
+            </SelectItem>
+            <SelectItem value="active">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span>Active Only</span>
+              </div>
+            </SelectItem>
+            <SelectItem value="inactive">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                <span>Inactive Only</span>
+              </div>
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+
 
       {/* Route Table */}
       <motion.div
