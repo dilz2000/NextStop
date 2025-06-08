@@ -30,7 +30,7 @@ import {
   Hash,
   Activity
 } from "lucide-react";
-import { updateBus, BusUpdateRequest, Bus } from "../../../api/busApi";
+import {  updateBusWithSchedules, updateBus, BusUpdateRequest, Bus } from "../../../api/busApi";
 
 interface EditBusModalProps {
   isOpen: boolean;
@@ -74,6 +74,7 @@ const EditBusModal: React.FC<EditBusModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [affectedSchedules, setAffectedSchedules] = useState<number>(0);
 
   // Initialize form data when currentBus changes
   useEffect(() => {
@@ -152,11 +153,11 @@ const EditBusModal: React.FC<EditBusModalProps> = ({
     if (!currentBus || !validateForm()) {
       return;
     }
-
+  
     setLoading(true);
     setSubmitError(null);
     setSubmitSuccess(false);
-
+  
     try {
       const updateData: BusUpdateRequest = {
         busNumber: formData.busNumber.trim(),
@@ -165,8 +166,9 @@ const EditBusModal: React.FC<EditBusModalProps> = ({
         operatorName: formData.operatorName.trim(),
         status: formData.status,
       };
-
-      await updateBus(parseInt(currentBus.id), updateData);
+  
+      // handles schedule updates as well
+      await updateBusWithSchedules(parseInt(currentBus.id), updateData);
       
       setSubmitSuccess(true);
       
@@ -175,13 +177,18 @@ const EditBusModal: React.FC<EditBusModalProps> = ({
         ...currentBus,
         ...updateData,
       });
-
+  
+      // Show success message with additional info if schedules were affected
+      if (updateData.status === 'inactive') {
+        setSubmitError(null); // Clear any previous errors
+      }
+  
       // Call parent's onEditBus to refresh the list
       setTimeout(() => {
         onEditBus();
         onOpenChange(false);
       }, 1500);
-
+  
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : 'Failed to update bus');
     } finally {
@@ -219,10 +226,16 @@ const EditBusModal: React.FC<EditBusModalProps> = ({
             <Alert className="border-green-200 bg-green-50">
               <CheckCircle className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-800">
-                Bus details updated successfully!
+                Bus updated successfully!
+                {formData.status === 'inactive' && (
+                  <span className="block mt-1 text-sm">
+                    Related schedules have also been set to inactive.
+                  </span>
+                )}
               </AlertDescription>
             </Alert>
           )}
+
 
           {/* Error Message */}
           {submitError && (

@@ -1,4 +1,5 @@
-const BASE_URL = 'http://localhost:8765/bus-service';
+// const BASE_URL = 'http://localhost:8765/bus-service';
+const BASE_URL = 'http://localhost:8080';
 
 export interface Bus {
   id: number;

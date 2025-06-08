@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, AlertCircle, CheckCircle, MapPin, ArrowRight, Timer, Ruler, Activity } from "lucide-react";
-import { updateRoute, RouteUpdateRequest, Route } from "../../../api/routeApi";
+import { updateRouteWithSchedules, updateRoute, RouteUpdateRequest, Route } from "../../../api/routeApi";
 
 interface EditRouteModalProps {
   isOpen: boolean;
@@ -85,11 +85,40 @@ const EditRouteModal: React.FC<EditRouteModalProps> = ({
     if (submitError) setSubmitError(null);
   };
 
+  // const handleSubmit = async () => {
+  //   if (!currentRoute || !validateForm()) return;
+  //   setLoading(true);
+  //   setSubmitError(null);
+  //   setSubmitSuccess(false);
+  //   try {
+  //     const updateData: RouteUpdateRequest = {
+  //       sourceCity: formData.sourceCity.trim(),
+  //       destinationCity: formData.destinationCity.trim(),
+  //       distanceKm: Number(formData.distanceKm),
+  //       duration: formData.duration.length === 5 ? formData.duration + ":00" : formData.duration,
+  //       status: formData.status,
+  //     };
+  //     await updateRoute(currentRoute.id, updateData);
+  //     setSubmitSuccess(true);
+  //     setCurrentRoute({ ...currentRoute, ...updateData });
+  //     setTimeout(() => {
+  //       onEditRoute();
+  //       onOpenChange(false);
+  //     }, 1200);
+  //   } catch (error) {
+  //     setSubmitError(error instanceof Error ? error.message : "Failed to update route");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const handleSubmit = async () => {
     if (!currentRoute || !validateForm()) return;
+    
     setLoading(true);
     setSubmitError(null);
     setSubmitSuccess(false);
+    
     try {
       const updateData: RouteUpdateRequest = {
         sourceCity: formData.sourceCity.trim(),
@@ -98,9 +127,18 @@ const EditRouteModal: React.FC<EditRouteModalProps> = ({
         duration: formData.duration.length === 5 ? formData.duration + ":00" : formData.duration,
         status: formData.status,
       };
-      await updateRoute(currentRoute.id, updateData);
+      
+      // handles schedule updates as well
+      await updateRouteWithSchedules(currentRoute.id, updateData);
+      
       setSubmitSuccess(true);
       setCurrentRoute({ ...currentRoute, ...updateData });
+      
+      // Show success message with additional info if schedules were affected
+      if (updateData.status === 'inactive') {
+        setSubmitError(null); // Clear any previous errors
+      }
+      
       setTimeout(() => {
         onEditRoute();
         onOpenChange(false);
@@ -135,15 +173,21 @@ const EditRouteModal: React.FC<EditRouteModalProps> = ({
             Update the details for route <strong>{currentRoute.sourceCity} → {currentRoute.destinationCity}</strong>
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-6 py-4">
+        <div className="grid gap-6 py-4">          
           {submitSuccess && (
             <Alert className="border-green-200 bg-green-50">
               <CheckCircle className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-800">
                 Route updated successfully!
+                {formData.status === 'inactive' && (
+                  <span className="block mt-1 text-sm">
+                    Related schedules have also been set to inactive.
+                  </span>
+                )}
               </AlertDescription>
             </Alert>
           )}
+
           {submitError && (
             <Alert className="border-red-200 bg-red-50">
               <AlertCircle className="h-4 w-4 text-red-600" />

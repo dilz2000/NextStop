@@ -79,9 +79,19 @@ const Login = () => {
       // Store authentication token if provided
       if (response.token) {
         localStorage.setItem('authToken', response.token);
-        localStorage.setItem('user', JSON.stringify(response.user));
+        
+        // Store complete user data
+        const userData = {
+          id: response.id,
+          token: response.token,
+          role: response.role,
+          fullName: response.fullName,
+          email: response.email,
+          refreshToken: response.refreshToken
+        };
+        
+        localStorage.setItem('user', JSON.stringify(userData));
       }
-      console.log("TOOOKEEEN: ", response.token);
 
       setIsSuccess(true);
       

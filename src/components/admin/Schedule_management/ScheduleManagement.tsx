@@ -9,6 +9,13 @@ import { Badge } from '@/components/ui/badge';
 import AddScheduleModal from './AddScheduleModal';
 import EditScheduleModal from './EditScheduleModal';
 import { fetchAllSchedules, fetchAllBuses, fetchAllRoutes, Schedule, Bus, Route } from '../../../api/ScheduleManageApi';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const ScheduleManagement = () => {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -21,6 +28,7 @@ const ScheduleManagement = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [currentSchedule, setCurrentSchedule] = useState<Schedule | null>(null);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
 
   const loadData = async () => {
     setLoading(true);
@@ -45,13 +53,17 @@ const ScheduleManagement = () => {
   useEffect(() => { loadData(); }, []);
 
   useEffect(() => {
-    const filtered = schedules.filter(
+    let filtered = schedules.filter(
       (s) =>
         s.bus.operatorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         `${s.route.sourceCity} to ${s.route.destinationCity}`.toLowerCase().includes(searchTerm.toLowerCase())
     );
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(s => s.status === statusFilter);
+    }
     setFilteredSchedules(filtered);
-  }, [schedules, searchTerm]);
+  }, [schedules, searchTerm, statusFilter]);
+  
 
   const handleAddSchedule = async () => {
     await loadData();
@@ -87,6 +99,18 @@ const ScheduleManagement = () => {
       day: 'numeric'
     });
   };
+
+  const getFilteredStats = () => {
+    const currentSchedules = statusFilter === 'all' ? schedules : schedules.filter(schedule => schedule.status === statusFilter);
+    return {
+      total: currentSchedules.length,
+      active: currentSchedules.filter(schedule => schedule.status === 'active').length,
+      avgFare: currentSchedules.length > 0 ? (currentSchedules.reduce((sum, s) => sum + s.fare, 0) / currentSchedules.length) : 0,
+      uniqueRoutes: new Set(currentSchedules.map(s => s.route.id)).size
+    };
+  };
+  
+  const stats = getFilteredStats();
 
   if (loading) {
     return (
@@ -151,7 +175,7 @@ const ScheduleManagement = () => {
             <Calendar className="h-8 w-8 text-blue-600" />
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Schedules</p>
-              <p className="text-2xl font-bold text-gray-900">{schedules.length}</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
             </div>
           </div>
         </div>
@@ -161,7 +185,7 @@ const ScheduleManagement = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Active Schedules</p>
               <p className="text-2xl font-bold text-gray-900">
-                {schedules.filter(s => s.status === 'active').length}
+                {stats.active}
               </p>
             </div>
           </div>
@@ -172,7 +196,7 @@ const ScheduleManagement = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Avg Fare</p>
               <p className="text-2xl font-bold text-gray-900">
-                ${schedules.length > 0 ? (schedules.reduce((sum, s) => sum + s.fare, 0) / schedules.length).toFixed(2) : '0.00'}
+                LKR {stats.avgFare}
               </p>
             </div>
           </div>
@@ -183,30 +207,58 @@ const ScheduleManagement = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Routes Covered</p>
               <p className="text-2xl font-bold text-gray-900">
-                {new Set(schedules.map(s => s.route.id)).size}
+                {stats.uniqueRoutes}
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Search */}
-      <div className="bg-white p-4 rounded-lg border shadow-sm">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-          <Input
-            placeholder="Search schedules by operator or route..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        {searchTerm && (
-          <p className="text-sm text-gray-600 mt-2">
-            Found {filteredSchedules.length} schedule(s) matching "{searchTerm}"
-          </p>
-        )}
+      <div className="flex flex-col md:flex-row gap-4">
+      {/* Search Input */}
+      <div className="relative flex-1">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+        <Input
+          placeholder="Search schedules by operator or route..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-10"
+        />
       </div>
+      {/* Status Filter */}
+      <div className="flex items-center gap-2 min-w-[200px]">
+        <Clock className="h-4 w-4 text-gray-500" />
+        <Select
+          value={statusFilter}
+          onValueChange={(value: 'all' | 'active' | 'inactive') => setStatusFilter(value)}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                <span>All Schedules</span>
+              </div>
+            </SelectItem>
+            <SelectItem value="active">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span>Active Only</span>
+              </div>
+            </SelectItem>
+            <SelectItem value="inactive">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                <span>Inactive Only</span>
+              </div>
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+
 
       {/* Schedule Table */}
       <div className="bg-white rounded-lg border shadow-sm">
