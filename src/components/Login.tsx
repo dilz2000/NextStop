@@ -103,7 +103,12 @@ const Login = () => {
 
       // Redirect to home after success
       setTimeout(() => {
-        window.location.href = "/"; // or wherever you want to redirect
+        if(response.role == 'ROLE_ADMIN'){
+          window.location.href = "/admin"; 
+        }
+        else{
+          window.location.href = "/"; 
+        }
       }, 2500);
 
     } catch (error: any) {
