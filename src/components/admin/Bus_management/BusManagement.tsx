@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
@@ -10,7 +9,11 @@ import {
   Activity,
   Loader2,
   RefreshCw,
-  AlertCircle
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,6 +60,7 @@ interface NewBus {
 const BusManagement = () => {
   const [buses, setBuses] = useState<Bus[]>([]);
   const [filteredBuses, setFilteredBuses] = useState<Bus[]>([]);
+  const [paginatedBuses, setPaginatedBuses] = useState<Bus[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -72,7 +76,9 @@ const BusManagement = () => {
     amenities: [],
   });
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
 
   // Load buses from API
   const loadBuses = async () => {
@@ -94,6 +100,7 @@ const BusManagement = () => {
     loadBuses();
   }, []);
 
+  // Filter buses based on search term and status
   useEffect(() => {
     let filtered = buses.filter(
       (bus) =>
@@ -110,6 +117,21 @@ const BusManagement = () => {
     setFilteredBuses(filtered);
   }, [buses, searchTerm, statusFilter]);
 
+  // Pagination logic
+  useEffect(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginated = filteredBuses.slice(startIndex, endIndex);
+    
+    setPaginatedBuses(paginated);
+    setTotalPages(Math.ceil(filteredBuses.length / itemsPerPage));
+  }, [filteredBuses, currentPage, itemsPerPage]);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
+
   const handleAddBus = async () => {
     // Reload buses from API to reflect changes
     await loadBuses();
@@ -121,7 +143,6 @@ const BusManagement = () => {
     await loadBuses();
     setIsEditDialogOpen(false);
   };
-  
 
   const handleDeleteBus = (id: string) => {
     // This will be implemented when you ask for delete functionality
@@ -153,8 +174,99 @@ const BusManagement = () => {
     };
   };
 
-  const stats = getFilteredStats();
+  // Pagination Controls Component
+  const PaginationControls = () => {
+    const startItem = (currentPage - 1) * itemsPerPage + 1;
+    const endItem = Math.min(currentPage * itemsPerPage, filteredBuses.length);
 
+    return (
+      <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200">
+        <div className="flex items-center text-sm text-gray-700">
+          <span>
+            Showing <span className="font-medium">{startItem}</span> to{" "}
+            <span className="font-medium">{endItem}</span> of{" "}
+            <span className="font-medium">{filteredBuses.length}</span> results
+          </span>
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          {/* First Page */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(1)}
+            disabled={currentPage === 1}
+            className="p-2"
+          >
+            <ChevronsLeft className="h-4 w-4" />
+          </Button>
+          
+          {/* Previous Page */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="p-2"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          
+          {/* Page Numbers */}
+          <div className="flex items-center space-x-1">
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pageNumber;
+              if (totalPages <= 5) {
+                pageNumber = i + 1;
+              } else if (currentPage <= 3) {
+                pageNumber = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                pageNumber = totalPages - 4 + i;
+              } else {
+                pageNumber = currentPage - 2 + i;
+              }
+              
+              return (
+                <Button
+                  key={pageNumber}
+                  variant={currentPage === pageNumber ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setCurrentPage(pageNumber)}
+                  className="w-8 h-8 p-0"
+                >
+                  {pageNumber}
+                </Button>
+              );
+            })}
+          </div>
+          
+          {/* Next Page */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="p-2"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          
+          {/* Last Page */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(totalPages)}
+            disabled={currentPage === totalPages}
+            className="p-2"
+          >
+            <ChevronsRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
+  const stats = getFilteredStats();
 
   if (loading) {
     return (
@@ -358,7 +470,6 @@ const BusManagement = () => {
         )}
       </div>
 
-
       {/* Bus Table */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -379,8 +490,8 @@ const BusManagement = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredBuses.length > 0 ? (
-              filteredBuses.map((bus, index) => (
+            {paginatedBuses.length > 0 ? (
+              paginatedBuses.map((bus, index) => (
                 <motion.tr
                   key={bus.id}
                   initial={{ opacity: 0, x: -20 }}
@@ -498,6 +609,9 @@ const BusManagement = () => {
             )}
           </TableBody>
         </Table>
+        
+        {/* Add Pagination Controls */}
+        {filteredBuses.length > itemsPerPage && <PaginationControls />}
       </motion.div>
 
       {/* Edit Dialog */}
