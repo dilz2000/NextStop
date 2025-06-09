@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
@@ -13,7 +12,12 @@ import {
   Navigation,
   Clock,
   Ruler,
-  ArrowRight
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Activity
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +38,7 @@ import {
 const RouteManagement: React.FC = () => {
   const [routes, setRoutes] = useState<Route[]>([]);
   const [filteredRoutes, setFilteredRoutes] = useState<Route[]>([]);
+  const [paginatedRoutes, setPaginatedRoutes] = useState<Route[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,6 +46,9 @@ const RouteManagement: React.FC = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [currentRoute, setCurrentRoute] = useState<Route | null>(null);
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
 
   const loadRoutes = async () => {
     setLoading(true);
@@ -58,6 +66,7 @@ const RouteManagement: React.FC = () => {
 
   useEffect(() => { loadRoutes(); }, []);
 
+  // Filter routes based on search term and status
   useEffect(() => {
     let filtered = routes.filter(
       (r) =>
@@ -69,7 +78,21 @@ const RouteManagement: React.FC = () => {
     }
     setFilteredRoutes(filtered);
   }, [routes, searchTerm, statusFilter]);
-  
+
+  // Pagination logic
+  useEffect(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginated = filteredRoutes.slice(startIndex, endIndex);
+    
+    setPaginatedRoutes(paginated);
+    setTotalPages(Math.ceil(filteredRoutes.length / itemsPerPage));
+  }, [filteredRoutes, currentPage, itemsPerPage]);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
 
   const handleAddRoute = async () => {
     await loadRoutes();
@@ -90,7 +113,7 @@ const RouteManagement: React.FC = () => {
     setIsEditDialogOpen(true);
   };
 
-  // Calculate statistics
+  // Calculate statistics based on current filter
   const getFilteredStats = () => {
     const currentRoutes = statusFilter === 'all' ? routes : routes.filter(route => route.status === statusFilter);
     return {
@@ -103,8 +126,101 @@ const RouteManagement: React.FC = () => {
       ]).size
     };
   };
-  
+
+  // Pagination Controls Component
+  const PaginationControls = () => {
+    const startItem = (currentPage - 1) * itemsPerPage + 1;
+    const endItem = Math.min(currentPage * itemsPerPage, filteredRoutes.length);
+
+    return (
+      <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200">
+        <div className="flex items-center text-sm text-gray-700">
+          <span>
+            Showing <span className="font-medium">{startItem}</span> to{" "}
+            <span className="font-medium">{endItem}</span> of{" "}
+            <span className="font-medium">{filteredRoutes.length}</span> results
+          </span>
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          {/* First Page */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(1)}
+            disabled={currentPage === 1}
+            className="p-2"
+          >
+            <ChevronsLeft className="h-4 w-4" />
+          </Button>
+          
+          {/* Previous Page */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="p-2"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          
+          {/* Page Numbers */}
+          <div className="flex items-center space-x-1">
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pageNumber;
+              if (totalPages <= 5) {
+                pageNumber = i + 1;
+              } else if (currentPage <= 3) {
+                pageNumber = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                pageNumber = totalPages - 4 + i;
+              } else {
+                pageNumber = currentPage - 2 + i;
+              }
+              
+              return (
+                <Button
+                  key={pageNumber}
+                  variant={currentPage === pageNumber ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setCurrentPage(pageNumber)}
+                  className="w-8 h-8 p-0"
+                >
+                  {pageNumber}
+                </Button>
+              );
+            })}
+          </div>
+          
+          {/* Next Page */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="p-2"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          
+          {/* Last Page */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(totalPages)}
+            disabled={currentPage === totalPages}
+            className="p-2"
+          >
+            <ChevronsRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
   const stats = getFilteredStats();
+
   // Format duration
   const formatDuration = (duration: string) => {
     const parts = duration.split(':');
@@ -230,51 +346,88 @@ const RouteManagement: React.FC = () => {
         </motion.div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4">
-      {/* Search Input */}
-      <div className="relative flex-1">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-        <Input
-          placeholder="Search routes by source or destination city..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10"
-        />
+      {/* Search and Filter Section */}
+      <div className="bg-white p-4 rounded-lg border shadow-sm space-y-4">
+        <div className="flex flex-col md:flex-row gap-4">
+          {/* Search Input */}
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <Input
+              placeholder="Search routes by source or destination city..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          
+          {/* Status Filter */}
+          <div className="flex items-center gap-2 min-w-[200px]">
+            <Activity className="h-4 w-4 text-gray-500" />
+            <Select
+              value={statusFilter}
+              onValueChange={(value: 'all' | 'active' | 'inactive') => setStatusFilter(value)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                    <span>All Routes</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="active">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span>Active Only</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="inactive">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <span>Inactive Only</span>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        
+        {/* Filter Results Info */}
+        {(searchTerm || statusFilter !== 'all') && (
+          <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
+            <span>
+              Found {filteredRoutes.length} route(s)
+            </span>
+            {searchTerm && (
+              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                matching "{searchTerm}"
+              </span>
+            )}
+            {statusFilter !== 'all' && (
+              <span className={`px-2 py-1 rounded-full text-xs ${
+                statusFilter === 'active' 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-red-100 text-red-800'
+              }`}>
+                {statusFilter} status
+              </span>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSearchTerm('');
+                setStatusFilter('all');
+              }}
+              className="text-xs text-gray-500 hover:text-gray-700"
+            >
+              Clear filters
+            </Button>
+          </div>
+        )}
       </div>
-      {/* Status Filter */}
-      <div className="flex items-center gap-2 min-w-[200px]">
-        <MapPin className="h-4 w-4 text-gray-500" />
-        <Select
-          value={statusFilter}
-          onValueChange={(value: 'all' | 'active' | 'inactive') => setStatusFilter(value)}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                <span>All Routes</span>
-              </div>
-            </SelectItem>
-            <SelectItem value="active">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span>Active Only</span>
-              </div>
-            </SelectItem>
-            <SelectItem value="inactive">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                <span>Inactive Only</span>
-              </div>
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-    </div>
-
 
       {/* Route Table */}
       <motion.div
@@ -295,8 +448,8 @@ const RouteManagement: React.FC = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredRoutes.length > 0 ? (
-              filteredRoutes.map((route, index) => (
+            {paginatedRoutes.length > 0 ? (
+              paginatedRoutes.map((route, index) => (
                 <motion.tr
                   key={route.id}
                   initial={{ opacity: 0, x: -20 }}
@@ -410,6 +563,9 @@ const RouteManagement: React.FC = () => {
             )}
           </TableBody>
         </Table>
+        
+        {/* Add Pagination Controls */}
+        {filteredRoutes.length > itemsPerPage && <PaginationControls />}
       </motion.div>
 
       <EditRouteModal

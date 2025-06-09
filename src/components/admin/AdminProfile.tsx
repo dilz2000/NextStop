@@ -1,151 +1,3 @@
-// import React from "react";
-// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-// import { Button } from "@/components/ui/button";
-// import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-// import { Edit, LogOut, Settings } from "lucide-react";
-
-// const AdminProfile = () => {
-//   // Sample admin data
-//   const admin = {
-//     name: "Admin User",
-//     email: "admin@quickbus.com",
-//     role: "System Administrator",
-//     joinedDate: "Jan 15, 2023",
-//     lastLogin: "Today at 9:30 AM",
-//   };
-
-//   return (
-//     <div className="space-y-6">
-//       <div className="flex justify-between items-center">
-//         <h1 className="text-2xl font-bold">Admin Profile</h1>
-//         <Button variant="outline" size="sm">
-//           <Edit className="h-4 w-4 mr-2" /> Edit Profile
-//         </Button>
-//       </div>
-
-//       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-//         {/* Profile Card */}
-//         <Card className="md:col-span-1">
-//           <CardContent className="pt-6">
-//             <div className="flex flex-col items-center space-y-4">
-//               <Avatar className="h-24 w-24">
-//                 <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=admin" />
-//                 <AvatarFallback>AD</AvatarFallback>
-//               </Avatar>
-//               <div className="text-center">
-//                 <h2 className="text-xl font-bold">{admin.name}</h2>
-//                 <p className="text-sm text-gray-500">{admin.email}</p>
-//                 <div className="mt-2 inline-block bg-primary/10 text-primary text-xs px-2 py-1 rounded-full">
-//                   {admin.role}
-//                 </div>
-//               </div>
-//               <div className="flex space-x-2 w-full">
-//                 <Button className="flex-1" size="sm">
-//                   <Settings className="h-4 w-4 mr-2" /> Settings
-//                 </Button>
-//                 <Button variant="outline" className="flex-1" size="sm">
-//                   <LogOut className="h-4 w-4 mr-2" /> Logout
-//                 </Button>
-//               </div>
-//             </div>
-//           </CardContent>
-//         </Card>
-
-//         {/* Details Card */}
-//         <Card className="md:col-span-2">
-//           <CardHeader>
-//             <CardTitle>Account Details</CardTitle>
-//           </CardHeader>
-//           <CardContent>
-//             <div className="space-y-4">
-//               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-//                 <div>
-//                   <h3 className="text-sm font-medium text-gray-500">
-//                     Full Name
-//                   </h3>
-//                   <p>{admin.name}</p>
-//                 </div>
-//                 <div>
-//                   <h3 className="text-sm font-medium text-gray-500">
-//                     Email Address
-//                   </h3>
-//                   <p>{admin.email}</p>
-//                 </div>
-//                 <div>
-//                   <h3 className="text-sm font-medium text-gray-500">Role</h3>
-//                   <p>{admin.role}</p>
-//                 </div>
-//                 <div>
-//                   <h3 className="text-sm font-medium text-gray-500">
-//                     Joined Date
-//                   </h3>
-//                   <p>{admin.joinedDate}</p>
-//                 </div>
-//                 <div>
-//                   <h3 className="text-sm font-medium text-gray-500">
-//                     Last Login
-//                   </h3>
-//                   <p>{admin.lastLogin}</p>
-//                 </div>
-//               </div>
-//             </div>
-//           </CardContent>
-//         </Card>
-
-//         {/* Security Card */}
-//         <Card className="md:col-span-3">
-//           <CardHeader>
-//             <CardTitle>Security Settings</CardTitle>
-//           </CardHeader>
-//           <CardContent>
-//             <div className="space-y-4">
-//               <div className="flex justify-between items-center">
-//                 <div>
-//                   <h3 className="font-medium">Change Password</h3>
-//                   <p className="text-sm text-gray-500">
-//                     Update your password regularly to keep your account secure
-//                   </p>
-//                 </div>
-//                 <Button variant="outline" size="sm">
-//                   Change Password
-//                 </Button>
-//               </div>
-//               <div className="flex justify-between items-center">
-//                 <div>
-//                   <h3 className="font-medium">Two-Factor Authentication</h3>
-//                   <p className="text-sm text-gray-500">
-//                     Add an extra layer of security to your account
-//                   </p>
-//                 </div>
-//                 <Button variant="outline" size="sm">
-//                   Enable
-//                 </Button>
-//               </div>
-//               <div className="flex justify-between items-center">
-//                 <div>
-//                   <h3 className="font-medium">Login History</h3>
-//                   <p className="text-sm text-gray-500">
-//                     View your recent login activity
-//                   </p>
-//                 </div>
-//                 <Button variant="outline" size="sm">
-//                   View History
-//                 </Button>
-//               </div>
-//             </div>
-//           </CardContent>
-//         </Card>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default AdminProfile;
-
-
-
-/////////////////
-
 
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -162,7 +14,10 @@ import {
   Clock,
   Key,
   Eye,
-  AlertTriangle
+  AlertTriangle,
+  Loader2,
+  RefreshCw,
+  AlertCircle
 } from "lucide-react";
 import {
   AlertDialog,
@@ -174,38 +29,111 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { 
+  fetchCurrentAdminProfile, 
+  getCurrentUserFromStorage, 
+  isAuthenticated,
+  AdminProfile as AdminProfileType 
+} from "../../api/adminApi";
+import EditUserModal from "./User_management/EditUserModal";
+
+interface AdminData {
+  name: string;
+  email: string;
+  role: string;
+  id: number;
+  emailVerified: boolean;
+  active: boolean;
+  roles: string[];
+  joinedDate: string;
+  lastLogin: string;
+}
 
 const AdminProfile = () => {
-  const [admin, setAdmin] = useState<any>(null);
+  const [admin, setAdmin] = useState<AdminData | null>(null);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
-    // Get user data from localStorage
-    const userData = localStorage.getItem('user');
-    if (userData) {
+    const loadAdminData = async () => {
+      setLoading(true);
+      setError(null);
+      
       try {
-        const user = JSON.parse(userData);
-        setAdmin({
-          name: user.fullName || "Admin User",
-          email: user.email || "admin@quickbus.com",
-          role: user.role === "ROLE_ADMIN" ? "System Administrator" : user.role,
-          id: user.id,
-          joinedDate: "Jan 15, 2023", // You can add this to user data later
-          lastLogin: new Date().toLocaleDateString('en-US', {
-            weekday: 'long',
-            hour: '2-digit',
-            minute: '2-digit'
-          }),
-        });
+        // Check authentication first
+        if (!isAuthenticated()) {
+          window.location.href = '/';
+          return;
+        }
+
+        // Get user data from localStorage
+        const localUser = getCurrentUserFromStorage();
+        if (!localUser) {
+          window.location.href = '/';
+          return;
+        }
+        
+        // Check if user is admin
+        if (localUser.role !== "ROLE_ADMIN") {
+          window.location.href = '/';
+          return;
+        }
+
+        try {
+          // Try to fetch fresh data from API
+          const apiUserData: AdminProfileType = await fetchCurrentAdminProfile(localUser.id);
+          
+          // Combine API data with localStorage data (API takes priority)
+          setAdmin({
+            name: apiUserData.fullName || localUser.fullName || "Admin User",
+            email: apiUserData.email || localUser.email || "admin@quickbus.com",
+            role: apiUserData.roles && apiUserData.roles.includes("ROLE_ADMIN") 
+              ? "System Administrator" 
+              : (localUser.role === "ROLE_ADMIN" ? "System Administrator" : localUser.role),
+            id: apiUserData.id || localUser.id,
+            emailVerified: apiUserData.emailVerified || false,
+            active: apiUserData.active !== undefined ? apiUserData.active : true,
+            roles: apiUserData.roles || [localUser.role],
+            // Fallback to localStorage or default values for data not in API
+            joinedDate: localUser.joinedDate || "Jan 15, 2023",
+            lastLogin: new Date().toLocaleDateString('en-US', {
+              weekday: 'long',
+              hour: '2-digit',
+              minute: '2-digit'
+            }),
+          });
+        } catch (apiError) {
+          // If API fails, use localStorage data
+          console.warn('API fetch failed, using localStorage data:', apiError);
+          setAdmin({
+            name: localUser.fullName || "Admin User",
+            email: localUser.email || "admin@quickbus.com",
+            role: localUser.role === "ROLE_ADMIN" ? "System Administrator" : localUser.role,
+            id: localUser.id,
+            emailVerified: false, // Default since not available
+            active: true, // Default since not available
+            roles: [localUser.role],
+            joinedDate: "Jan 15, 2023",
+            lastLogin: new Date().toLocaleDateString('en-US', {
+              weekday: 'long',
+              hour: '2-digit',
+              minute: '2-digit'
+            }),
+          });
+        }
       } catch (error) {
-        console.error('Error parsing user data:', error);
+        console.error('Error loading admin data:', error);
+        setError('Failed to load profile data');
         // Redirect to home if data is corrupted
         window.location.href = '/';
+      } finally {
+        setLoading(false);
       }
-    } else {
-      // Redirect to home if no user data
-      window.location.href = '/';
-    }
+    };
+
+    loadAdminData();
   }, []);
 
   const handleLogout = () => {
@@ -223,6 +151,29 @@ const AdminProfile = () => {
     window.location.href = '/';
   };
 
+  const handleRefresh = () => {
+    window.location.reload();
+  };
+
+  const handleEditProfile = async () => {
+    // Reload the profile data after editing
+    window.location.reload(); // refresh data
+    setIsEditModalOpen(false);
+  };
+
+  const getEditableUserData = () => {
+    if (!admin) return null;
+    
+    return {
+      id: admin.id,
+      fullName: admin.name,
+      email: admin.email,
+      emailVerified: admin.emailVerified,
+      active: admin.active,
+      roles: admin.roles,
+    };
+  };
+
   // Get initials from name
   const getInitials = (name: string) => {
     return name
@@ -233,12 +184,43 @@ const AdminProfile = () => {
       .slice(0, 2);
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-blue-600" />
+          <p className="text-gray-600">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <AlertCircle className="h-12 w-12 mx-auto mb-4 text-red-500" />
+          <h3 className="text-lg font-semibold mb-2">Error Loading Profile</h3>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <Button onClick={handleRefresh} className="flex items-center gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   if (!admin) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading profile...</p>
+          <AlertCircle className="h-12 w-12 mx-auto mb-4 text-red-500" />
+          <h3 className="text-lg font-semibold mb-2">Profile Not Found</h3>
+          <p className="text-gray-600 mb-4">Unable to load admin profile</p>
+          <Button onClick={() => window.location.href = '/'}>
+            Go to Home
+          </Button>
         </div>
       </div>
     );
@@ -254,10 +236,21 @@ const AdminProfile = () => {
           </h1>
           <p className="text-gray-600 mt-1">Manage your account settings and preferences</p>
         </div>
-        <Button variant="outline" size="sm" className="flex items-center gap-2">
-          <Edit className="h-4 w-4" /> 
-          Edit Profile
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={handleRefresh} className="flex items-center gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex items-center gap-2"
+            onClick={() => setIsEditModalOpen(true)}
+          >
+            <Edit className="h-4 w-4" /> 
+            Edit Profile
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -271,7 +264,9 @@ const AdminProfile = () => {
                     {getInitials(admin.name)}
                   </AvatarFallback>
                 </Avatar>
-                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 border-2 border-white rounded-full flex items-center justify-center">
+                <div className={`absolute -bottom-1 -right-1 w-6 h-6 border-2 border-white rounded-full flex items-center justify-center ${
+                  admin.active ? 'bg-green-500' : 'bg-red-500'
+                }`}>
                   <div className="w-2 h-2 bg-white rounded-full"></div>
                 </div>
               </div>
@@ -280,11 +275,20 @@ const AdminProfile = () => {
                 <p className="text-sm text-gray-500 flex items-center justify-center gap-1 mt-1">
                   <Mail className="h-3 w-3" />
                   {admin.email}
+                  {admin.emailVerified && (
+                    <span className="ml-1 text-green-600" title="Email Verified">✓</span>
+                  )}
                 </p>
                 <div className="mt-3 inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">
                   <Shield className="h-3 w-3" />
                   {admin.role}
                 </div>
+                {!admin.active && (
+                  <div className="mt-2 inline-flex items-center gap-1 bg-red-100 text-red-800 text-xs px-3 py-1 rounded-full">
+                    <AlertCircle className="h-3 w-3" />
+                    Account Inactive
+                  </div>
+                )}
               </div>
               <div className="flex space-x-2 w-full">
                 <Button className="flex-1" size="sm" variant="outline">
@@ -328,7 +332,18 @@ const AdminProfile = () => {
                     <Mail className="h-4 w-4 text-gray-500" />
                     <h3 className="text-sm font-medium text-gray-500">Email Address</h3>
                   </div>
-                  <p className="text-lg font-medium">{admin.email}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-lg font-medium">{admin.email}</p>
+                    {/* {admin.emailVerified ? (
+                      <span className="text-green-600 text-sm bg-green-100 px-2 py-1 rounded-full">
+                        Verified
+                      </span>
+                    ) : (
+                      <span className="text-yellow-600 text-sm bg-yellow-100 px-2 py-1 rounded-full">
+                        Unverified
+                      </span>
+                    )} */}
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
@@ -347,9 +362,12 @@ const AdminProfile = () => {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-gray-500" />
-                    <h3 className="text-sm font-medium text-gray-500">Joined Date</h3>
+                    <h3 className="text-sm font-medium text-gray-500">Account Status</h3>
                   </div>
-                  <p className="text-lg font-medium">{admin.joinedDate}</p>
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${admin.active ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                    <p className="text-lg font-medium">{admin.active ? 'Active' : 'Inactive'}</p>
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
@@ -427,6 +445,16 @@ const AdminProfile = () => {
           </CardContent>
         </Card>
       </div>
+
+      {admin && (
+        <EditUserModal
+          isOpen={isEditModalOpen}
+          onOpenChange={setIsEditModalOpen}
+          currentUser={getEditableUserData()}
+          setCurrentUser={() => {}} // Not used since we refresh after edit
+          onEditUser={handleEditProfile}
+        />
+      )}
 
       {/* Logout Confirmation Dialog */}
       <AlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
