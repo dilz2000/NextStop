@@ -106,7 +106,7 @@ const Dashboard = () => {
       title: "Registered Users",
       value: stats.totalUsers,
       icon: <Users className="h-8 w-8 text-primary" />,
-      change: `${stats.activeUsers} active`,
+      // change: `${stats.activeUsers} active`,
     },
   ];
 

@@ -1,7 +1,7 @@
 
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8095/api/auth';
+const API_BASE_URL = 'http://localhost:8765/user-service/api/auth';
 
 export interface UserRegistrationRequest {
   fullName: string;

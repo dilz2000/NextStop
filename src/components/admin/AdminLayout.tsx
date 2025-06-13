@@ -11,6 +11,7 @@ import {
   X, 
   Map, 
   Tag,
+  Ticket,
   LogOut,
   AlertCircle,
   User as UserIcon
@@ -32,6 +33,7 @@ const AdminLayout = () => {
     { path: "/admin/routes", label: "Routes", icon: <RouteIcon size={20} /> },
     { path: "/admin/schedules", label: "Schedules", icon: <Calendar size={20} /> },
     { path: "/admin/users", label: "Users", icon: <Users size={20} /> },
+    { path: "/admin/bookings", label: "Bookings", icon: <Ticket size={20} /> },
     { path: "/admin/popular-routes", label: "Popular Routes", icon: <Map size={20} /> },
     { path: "/admin/promotions", label: "Special Offers", icon: <Tag size={20} /> },
   ];

@@ -1,6 +1,6 @@
 
-// const BASE_URL = 'http://localhost:8765/bus-service';
-const BASE_URL = 'http://localhost:8080';
+const BASE_URL = 'http://localhost:8765/bus-service';
+// const BASE_URL = 'http://localhost:8080';
 
 export interface RouteFromAPI {
   id: number;

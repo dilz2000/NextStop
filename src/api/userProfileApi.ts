@@ -1,5 +1,5 @@
 
-const BASE_URL = 'http://localhost:8095/api';
+const BASE_URL = 'http://localhost:8765/user-service/api';
 
 // Helper function to get auth token
 const getAuthToken = (): string | null => {

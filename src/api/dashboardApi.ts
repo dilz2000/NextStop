@@ -1,7 +1,7 @@
-const BASE_URL_BUS = 'http://localhost:8080';
-const BASE_URL_ROUTE = 'http://localhost:8080';
-const BASE_URL_SCHEDULE = 'http://localhost:8080';
-const BASE_URL_USER = 'http://localhost:8095/api';
+const BASE_URL_BUS = 'http://localhost:8765/bus-service';
+const BASE_URL_ROUTE = 'http://localhost:8765/bus-service';
+const BASE_URL_SCHEDULE = 'http://localhost:8765/bus-service';
+const BASE_URL_USER = 'http://localhost:8765/user-service/api';
 
 // Helper function to get auth token
 const getAuthToken = (): string | null => {

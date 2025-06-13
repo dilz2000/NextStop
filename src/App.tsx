@@ -31,6 +31,10 @@ const PromotionManagement = lazy(
   () => import("./components/admin/PromotionManagement"),
 );
 
+const BookingManagement = lazy(
+  () => import("./components/admin/BookingManagement"),
+);
+
 function App() {
   return (
     <Suspense fallback={<p>Loading...</p>}>
@@ -53,6 +57,7 @@ function App() {
           <Route path="profile" element={<AdminProfile />} />
           <Route path="popular-routes" element={<PopularRouteManagement />} />
           <Route path="promotions" element={<PromotionManagement />} />
+          <Route path="bookings" element={<BookingManagement />} />
         </Route>
 
         {/* Allow Tempo to capture routes before the catchall */}
