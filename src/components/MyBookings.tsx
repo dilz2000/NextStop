@@ -357,7 +357,15 @@ const MyBookings = () => {
         booking={selectedBooking}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        onBookingCancelled={() => {
+          // Refresh bookings list
+          const userId = getUserId();
+          if (userId) {
+            loadBookings(userId);
+          }
+        }}
       />
+
     </div>
   );
 };
