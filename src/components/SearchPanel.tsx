@@ -46,6 +46,7 @@ const SearchPanel = ({ onSearch = () => {} }: SearchPanelProps) => {
     "Chicago, IL",
     "Houston, TX",
     "Colombo",
+    "Trinco",
     "Kandy",
     "Galle",
     "Jaffna",

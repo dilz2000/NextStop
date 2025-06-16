@@ -9,6 +9,7 @@ import { fetchSeatAvailability, SeatAvailability } from "@/api/seatAvailabilityA
 interface SeatSelectionStepProps {
   selectedSchedule: ScheduleResponse | null;
   selectedSeats: string[];
+  // selectedSeatIds: string[];
   travelDate: Date | undefined;
   onSeatSelection: (seatNumber: string) => void;
   onContinueToPayment: () => void;
@@ -18,6 +19,7 @@ interface SeatSelectionStepProps {
 export const SeatSelectionStep: React.FC<SeatSelectionStepProps> = ({
   selectedSchedule,
   selectedSeats,
+  // selectedSeatIds,
   travelDate,
   onSeatSelection,
   onContinueToPayment,

@@ -29,6 +29,8 @@ const TicketBooking = () => {
     phone: "",
   });
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
+  // const [selectedSeatIds, setSelectedSeatIds] = useState<number[]>([]);
+  const [bookingId, setBookingId] = useState<number | null>(null);
 
   const renderStepContent = () => {
     switch (step) {
@@ -54,57 +56,57 @@ const TicketBooking = () => {
             onBackToSearch={() => setStep(1)}
           />
         );
-      case 3:
-        return (
-          <SeatSelectionStep 
-            selectedSchedule={selectedSchedule}
-            selectedSeats={selectedSeats}
-            travelDate={searchResults?.date} 
-            onSeatSelection={(seatNumber) => {
-              if (selectedSeats.includes(seatNumber)) {
-                setSelectedSeats(selectedSeats.filter((seat) => seat !== seatNumber));
-              } else if (selectedSeats.length < 4) {
-                setSelectedSeats([...selectedSeats, seatNumber]);
-              }
-            }}
-            onContinueToPayment={() => setStep(4)}
-            onBackToResults={() => setStep(2)}
-          />
-        );
-      case 4:
-        return (
-          <PaymentStep 
-            selectedSchedule={selectedSchedule}
-            selectedSeats={selectedSeats}
-            passengerDetails={passengerDetails}
-            onPassengerDetailsChange={(e) => {
-              const { name, value } = e.target;
-              setPassengerDetails({ ...passengerDetails, [name]: value });
-            }}
-            onPaymentSubmit={() => {
-              setBookingConfirmed(true);
-              setStep(5);
-            }}
-            onBackToSeatSelection={() => setStep(3)}
-          />
-        );
-      case 5:
-        return (
-          <ConfirmationStep 
-            selectedSchedule={selectedSchedule}
-            selectedSeats={selectedSeats}
-            passengerDetails={passengerDetails}
-            onBookAnother={() => {
-              setStep(1);
-              setSelectedSchedule(null);
-              setSelectedSeats([]);
-              setPassengerDetails({ name: "", email: "", phone: "" });
-              setBookingConfirmed(false);
-              setSchedules([]);
-              setSearchResults(null);
-            }}
-          />
-        );
+        case 3:
+  return (
+        <SeatSelectionStep 
+          selectedSchedule={selectedSchedule}
+          selectedSeats={selectedSeats}
+          travelDate={searchResults?.date}
+          onSeatSelection={(seatNumber) => {
+            if (selectedSeats.includes(seatNumber)) {
+              setSelectedSeats(selectedSeats.filter((seat) => seat !== seatNumber));
+            } else if (selectedSeats.length < 4) {
+              setSelectedSeats([...selectedSeats, seatNumber]);
+            }
+          }}
+          onContinueToPayment={() => setStep(4)}
+          onBackToResults={() => setStep(2)}
+        />
+      );
+
+    case 4:
+      return (
+        <PaymentStep 
+          selectedSchedule={selectedSchedule}
+          selectedSeats={selectedSeats}
+          travelDate={searchResults?.date}
+          onPaymentSuccess={(bookingId) => {
+            setBookingId(bookingId);
+            setStep(5);
+          }}
+          onBackToSeatSelection={() => setStep(3)}
+        />
+      );
+            
+        case 5:
+          return (
+            <ConfirmationStep 
+              bookingId={bookingId}
+              onViewBookings={() => {
+                // Navigate to My Bookings
+                window.location.href = "/my-bookings";
+              }}
+              onBookAnother={() => {
+                setStep(1);
+                setSelectedSchedule(null);
+                setSelectedSeats([]);
+                // setSelectedSeatIds([]);
+                setBookingId(null);
+                setSchedules([]);
+                setSearchResults(null);
+              }}
+            />
+          );
       default:
         return null;
     }
