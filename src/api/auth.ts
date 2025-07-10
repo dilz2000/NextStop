@@ -66,15 +66,15 @@ authApi.interceptors.response.use(
   }
 );
 
-export const registerUser = async (userData: UserRegistrationRequest): Promise<any> => {
-  try {
-    const response = await authApi.post('/register', userData);
-    return response.data;
-  } catch (error) {
-    console.error('Registration API error:', error);
-    throw error;
-  }
-};
+// export const registerUser = async (userData: UserRegistrationRequest): Promise<any> => {
+//   try {
+//     const response = await authApi.post('/register', userData);
+//     return response.data;
+//   } catch (error) {
+//     console.error('Registration API error:', error);
+//     throw error;
+//   }
+// };
 
 export const loginUser = async (email: string, password: string): Promise<any> => {
   try {
@@ -83,6 +83,30 @@ export const loginUser = async (email: string, password: string): Promise<any> =
     return response.data;
   } catch (error) {
     console.error('Login API error:', error);
+    throw error;
+  }
+};
+
+
+export const registerUser = async (userData: UserRegistrationRequest): Promise<any> => {
+  try {
+    console.log("Sending registration request to:", API_BASE_URL + '/register');
+    console.log("Request data:", userData);
+    
+    const response = await authApi.post('/register', userData);
+    
+    console.log("Full response object:", response);
+    console.log("Response status:", response.status);
+    console.log("Response data:", response.data);
+    console.log("Response headers:", response.headers);
+    
+    return response.data;
+  } catch (error) {
+    console.error('Registration API error:', error);
+    console.error('Error type:', typeof error);
+    console.error('Error response:', error.response);
+    console.error('Error request:', error.request);
+    console.error('Error message:', error.message);
     throw error;
   }
 };

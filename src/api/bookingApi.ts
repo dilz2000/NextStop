@@ -1,4 +1,3 @@
-// import { fetchAllUsers } from '../api/userApi';
 
 const BASE_URL = 'http://localhost:8765/booking-service/v1';
 
@@ -111,66 +110,6 @@ export const fetchUserById = async (userId: number): Promise<User> => {
   }
 };
 
-
-// export const fetchUserById = async (userId: number): Promise<User> => {
-//     try {
-//       // Debug authentication
-//       const token = localStorage.getItem('authToken');
-//       const userData = localStorage.getItem('user');
-      
-//       console.log('=== AUTH DEBUG ===');
-//       console.log('Token exists:', !!token);
-//       console.log('Token length:', token?.length);
-//       console.log('User data:', userData);
-//       console.log('Current URL:', window.location.href);
-//       console.log('==================');
-      
-//       console.log('Fetching user via getAllUsers approach for userId:', userId);
-      
-//       // Use the working getAllUsers endpoint
-//       const allUsers = await fetchAllUsers();
-//       console.log("USERS: ", allUsers)
-      
-//       // Rest of your existing code...
-  
-      
-//       // Rest of your existing code...
-  
-    
-//     // Find the specific user from the complete list
-//     const user = allUsers.find(u => u.id == userId);
-    
-//     if (!user) {
-//       console.warn(`User ${userId} not found in users list`);
-//       // Return fallback data
-//       return {
-//         id: userId,
-//         fullName: `User ${userId}`,
-//         email: 'user@notfound.com',
-//         emailVerified: false,
-//         active: true,
-//         roles: ['ROLE_CUSTOMER']
-//       };
-//     }
-    
-//     console.log('Successfully found user:', user);
-//     return user;
-//   } catch (error) {
-//     console.error('Error fetching user via getAllUsers:', error);
-//     // Return fallback data
-//     return {
-//       id: userId,
-//       fullName: `User ${userId}`,
-//       email: 'email@unavailable.com',
-//       emailVerified: false,
-//       active: true,
-//       roles: ['ROLE_CUSTOMER']
-//     };
-//   }
-// };
-
-  
-
 // Fetch schedule by id (includes bus and route details)
 export const fetchScheduleById = async (scheduleId: number): Promise<Schedule> => {
   try {
@@ -209,48 +148,3 @@ export const fetchBookingDetails = async (booking: Booking): Promise<BookingDeta
   }
 };
 
-// Fetch complete booking details with better error handling
-// export const fetchBookingDetails = async (booking: Booking): Promise<BookingDetails> => {
-//     try {
-//       const [userResult, scheduleResult] = await Promise.allSettled([
-//         fetchUserById(booking.userId),
-//         fetchScheduleById(booking.scheduleId)
-//       ]);
-  
-//       let user: User;
-//       let schedule: Schedule;
-  
-//       // Handle user fetch result
-//       if (userResult.status === 'fulfilled') {
-//         user = userResult.value;
-//       } else {
-//         console.warn('Failed to fetch user details, using fallback:', userResult.reason);
-//         user = {
-//           id: booking.userId,
-//           fullName: `User ${booking.userId}`,
-//           email: 'email@unavailable.com',
-//           emailVerified: false,
-//           active: true,
-//           roles: ['ROLE_CUSTOMER']
-//         };
-//       }
-  
-//       // Handle schedule fetch result
-//       if (scheduleResult.status === 'fulfilled') {
-//         schedule = scheduleResult.value;
-//       } else {
-//         console.error('Failed to fetch schedule details:', scheduleResult.reason);
-//         throw new Error('Schedule information is required but unavailable');
-//       }
-  
-//       return {
-//         booking,
-//         user,
-//         schedule
-//       };
-//     } catch (error) {
-//       console.error('Error fetching booking details:', error);
-//       throw error;
-//     }
-//   };
-  

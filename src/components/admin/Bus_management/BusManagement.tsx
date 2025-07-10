@@ -484,7 +484,7 @@ const BusManagement = () => {
               <TableHead className="font-semibold">Type</TableHead>
               <TableHead className="font-semibold">Operator</TableHead>
               <TableHead className="font-semibold">Total Seats</TableHead>
-              <TableHead className="font-semibold">Amenities</TableHead>
+              {/* <TableHead className="font-semibold">Amenities</TableHead> */}
               <TableHead className="font-semibold">Status</TableHead>
               <TableHead className="text-right font-semibold">Actions</TableHead>
             </TableRow>
@@ -520,7 +520,7 @@ const BusManagement = () => {
                       {bus.totalSeats}
                     </div>
                   </TableCell>
-                  <TableCell>
+                  {/* <TableCell>
                     <div className="flex flex-wrap gap-1">
                       {bus.amenities && bus.amenities.length > 0 ? (
                         bus.amenities.map((amenity) => (
@@ -535,7 +535,7 @@ const BusManagement = () => {
                         <span className="text-gray-400 text-sm">No amenities</span>
                       )}
                     </div>
-                  </TableCell>
+                  </TableCell> */}
                   <TableCell>
                     <Badge
                       variant="outline"
