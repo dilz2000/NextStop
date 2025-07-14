@@ -14,6 +14,10 @@ import ContentBlock from "./ContentBlock";
 import { Button } from "./ui/button";
 import { TooltipProvider } from "./ui/tooltip";
 import { format } from "date-fns";
+import Navigation from "./Navigation";
+
+import { fetchSchedules, ScheduleResponse } from "@/api/scheduleApi";
+import SearchResults from "@/components/SearchResults";
 
 const HomePage = () => {
   const [searchResults, setSearchResults] = useState<{
@@ -21,6 +25,8 @@ const HomePage = () => {
     destination: string;
     date: Date | undefined;
   } | null>(null);
+  
+  const [schedules, setSchedules] = useState<ScheduleResponse[]>([]);
 
   // Sample data for content blocks
   const [popularRoutes, setPopularRoutes] = useState([
@@ -148,79 +154,43 @@ const HomePage = () => {
     },
   ]);
 
-  // In a real application, you would fetch this data from an API
   useEffect(() => {
-    // Simulate API call
+  
     const fetchData = async () => {
-      // Here you would make actual API calls
-      // For now, we're using the static data initialized above
+      
       console.log("Data loaded successfully");
     };
 
     fetchData();
   }, []);
 
-  const handleSearch = (searchData: {
+  const handleSearch = async (searchData: {
     origin: string;
     destination: string;
     date: Date | undefined;
   }) => {
     setSearchResults(searchData);
-    console.log("Search data:", searchData);
+    if (searchData.origin && searchData.destination && searchData.date) {
+      try {
+        const formattedDate = searchData.date.toISOString().split("T")[0]; // yyyy-MM-dd
+        const result = await fetchSchedules(
+          searchData.origin,
+          searchData.destination,
+          formattedDate
+        );
+        setSchedules(result);
+      } catch (error) {
+        console.error("Failed to fetch schedules:", error);
+        setSchedules([]);
+      }
+    }
   };
 
   return (
     <TooltipProvider>
       <div className="min-h-screen bg-white">
         {/* Navigation Bar */}
-        <nav className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10">
-          <div className="container mx-auto flex justify-between items-center">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-primary">QuickBus</h1>
-            </div>
-            <div className="hidden md:flex space-x-6">
-              <a
-                href="/"
-                className="text-primary font-medium transition-colors"
-              >
-                Home
-              </a>
-              <a
-                href="/ticket-booking"
-                className="text-gray-600 hover:text-primary transition-colors"
-              >
-                Book Tickets
-              </a>
-              <a
-                href="/my-bookings"
-                className="text-gray-600 hover:text-primary transition-colors"
-              >
-                My Bookings
-              </a>
-              <a
-                href="/support"
-                className="text-gray-600 hover:text-primary transition-colors"
-              >
-                Support
-              </a>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => (window.location.href = "/sign-in")}
-              >
-                Sign In
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => (window.location.href = "/register")}
-              >
-                Register
-              </Button>
-            </div>
-          </div>
-        </nav>
+        <Navigation currentPage="home" />
 
         {/* Hero Banner */}
         <div className="relative h-[500px] overflow-hidden">
@@ -255,7 +225,7 @@ const HomePage = () => {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-white text-white hover:bg-white/10"
+                  className="bg-white text-primary hover:bg-gray-100"
                 >
                   Learn More
                 </Button>
@@ -281,7 +251,7 @@ const HomePage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="container mx-auto px-4 mt-8 bg-white rounded-xl shadow-md p-6 border border-gray-100"
+            className="container mx-auto max-w-4xl px-4 mt-8 bg-white rounded-xl shadow-md p-6 border border-gray-100"
           >
             <h3 className="text-xl font-bold mb-4">Search Results</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-gray-700">
@@ -302,13 +272,10 @@ const HomePage = () => {
                 </p>
               </div>
             </div>
-            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-              <p className="text-center text-gray-500">
-                Showing available buses for your search criteria...
-              </p>
-            </div>
+            <SearchResults schedules={schedules} /> 
           </motion.div>
         )}
+
 
         {/* Content Blocks */}
         <div className="container mx-auto px-4 py-16">
@@ -362,10 +329,10 @@ const HomePage = () => {
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
               <div>
-                <h3 className="text-lg font-bold mb-4">QuickBus</h3>
+                <h3 className="text-lg font-bold mb-4">NextStop</h3>
                 <p className="text-gray-600">
                   Making bus travel simple, convenient, and enjoyable since
-                  2023. Our mission is to connect people and places with
+                  2025. Our mission is to connect people and places with
                   reliable, comfortable, and affordable bus transportation.
                 </p>
               </div>
@@ -478,7 +445,7 @@ const HomePage = () => {
               </div>
             </div>
             <div className="mt-8 pt-8 border-t border-gray-200 text-center text-gray-500">
-              <p>&copy; 2025 QuickBus. All rights reserved.</p>
+              <p>&copy; 2025 NextStop. All rights reserved.</p>
             </div>
           </div>
         </footer>
