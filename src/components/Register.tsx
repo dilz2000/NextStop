@@ -187,7 +187,7 @@ const Register = () => {
       // Redirect to login after success
       setTimeout(() => {
         window.location.href = "/login";
-      }, 2500);
+      }, 3500);
   
     } catch (error: any) {
       console.error("Registration error:", error);
@@ -217,7 +217,7 @@ const Register = () => {
       // Show success message and redirect
       setTimeout(() => {
         window.location.href = "/login";
-      }, 2500);
+      }, 3500);
     } finally {
       setIsLoading(false);
     }

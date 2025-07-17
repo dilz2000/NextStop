@@ -32,42 +32,42 @@ const HomePage = () => {
   const [popularRoutes, setPopularRoutes] = useState([
     {
       id: "1",
-      title: "New York to Boston",
-      description: "Daily departures, 4.5 hour journey",
+      title: "Colombo to Galle",
+      description: "Daily departures, 2 hour journey",
       image:
-        "https://images.unsplash.com/photo-1582145641462-afd3c5efd5a3?w=800&q=80",
+        "https://theportuguesetraveler.com/wp-content/uploads/2024/11/colombo-sri-lanka-drone-view-1.jpg.webp",
       action: "Select Route",
     },
     {
       id: "2",
-      title: "Los Angeles to San Francisco",
-      description: "Premium coaches, 6 hour scenic drive",
+      title: "Jaffna to Trinco",
+      description: "Beach side drive",
       image:
-        "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=800&q=80",
+        "https://us.lakpura.com/cdn/shop/files/LKI9500075-01-E_b9676f68-bb02-4827-ad28-9de134e5b198.jpg?v=1653459755&width=3200",
       action: "Select Route",
     },
     {
       id: "3",
-      title: "Chicago to Detroit",
-      description: "Overnight options available, 5 hour journey",
+      title: "Mathugama to Negombo",
+      description: "Overnight options available, 4 hour journey",
       image:
-        "https://images.unsplash.com/photo-1531218150217-54595bc2b934?w=800&q=80",
+        "https://www.travelmapsrilanka.com/destinations/destinationimages/negombo-lagoon-in-sri-lanka.webp",
       action: "Select Route",
     },
     {
       id: "4",
-      title: "Seattle to Portland",
-      description: "Scenic route with mountain views, 3 hour journey",
+      title: "Colombo to Kalutara",
+      description: "Going down from the capital",
       image:
-        "https://images.unsplash.com/photo-1533461502717-83e21c326498?w=800&q=80",
+        "https://www.travelmapsrilanka.com/destinations/destinationimages/kalutara-bodhiya-buddhist-temple.webp",
       action: "Select Route",
     },
     {
       id: "5",
-      title: "Miami to Orlando",
-      description: "Luxury coaches with WiFi, 4 hour journey",
+      title: "Kandy to Matara",
+      description: "Scenic route with mountain views, 3 hour journey",
       image:
-        "https://images.unsplash.com/photo-1580674684081-7617fbf3d745?w=800&q=80",
+        "https://www.srilankainstyle.com/storage/app/media/uploaded-files/7-reasons-to-visit-kandy-in-sri-lanka-slider-1.jpg",
       action: "Select Route",
     },
   ]);
@@ -110,7 +110,7 @@ const HomePage = () => {
       title: "Senior Citizen Discount",
       description: "10% off for travelers aged 65 and above",
       image:
-        "https://images.unsplash.com/photo-1476458393436-fb317d87c161?w=800&q=80",
+        "https://milwaukeehomecare.com/wp-content/uploads/2022/04/5-Fun-Activities-to-Enjoy-this-National-Senior-Citizens-Day-1.png",
       action: "View Offer",
     },
   ]);

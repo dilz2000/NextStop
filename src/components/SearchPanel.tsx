@@ -41,10 +41,6 @@ const SearchPanel = ({ onSearch = () => {} }: SearchPanelProps) => {
 
   // Mock data for location suggestions
   const locations = [
-    "New York, NY",
-    "Los Angeles, CA",
-    "Chicago, IL",
-    "Houston, TX",
     "Colombo",
     "Trinco",
     "Kandy",
@@ -56,6 +52,8 @@ const SearchPanel = ({ onSearch = () => {} }: SearchPanelProps) => {
     "Negombo",
     "Kurunegala",
     "Ratnapura",
+    "Mathugama",
+
   ];
 
   const handleOriginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
