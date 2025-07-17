@@ -82,7 +82,7 @@ const PromotionManagement = () => {
       title: "Senior Citizen Discount",
       description: "10% off for travelers aged 65 and above",
       image:
-        "https://images.unsplash.com/photo-1476458393436-fb317d87c161?w=800&q=80",
+        "https://milwaukeehomecare.com/wp-content/uploads/2022/04/5-Fun-Activities-to-Enjoy-this-National-Senior-Citizens-Day-1.png",
       action: "View Offer",
     },
   ]);

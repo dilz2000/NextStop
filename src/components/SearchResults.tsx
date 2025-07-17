@@ -75,7 +75,7 @@ const SearchResults = ({ schedules }: SearchResultsProps) => {
             </div>
             <div className="space-y-1">
             <p className="text-sm text-gray-600">
-                <span className="font-semibold">Fare:</span> ₹{schedule.fare.toFixed(2)}
+                <span className="font-semibold">Fare:</span> LKR {schedule.fare.toFixed(2)}
             </p>
             <p className="text-sm text-gray-600">
                 <span className="font-semibold">Source:</span> {schedule.route.sourceCity}
